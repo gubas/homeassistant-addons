@@ -243,7 +243,7 @@
                 <button type="submit" class="btn btn-primary">
                     ➕ Ajouter à la queue
                 </button>
-                <button type="button" onclick="window.location.href='/queue'" class="btn btn-secondary">
+                <button type="button" onclick="window.location.href=window.location.pathname.replace(/[^/]*$/, '') + 'queue'" class="btn btn-secondary">
                     📋 Voir la queue
                 </button>
             </form>
