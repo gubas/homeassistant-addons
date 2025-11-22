@@ -1,5 +1,11 @@
 
+
 # Changelog
+
+## [0.3.2] - 2025-11-22
+
+### Fixed
+- Compatibilité Ingress : correction du chemin dynamique pour /submit dans le JS (window.location.pathname)
 
 ## [0.3.1] - 2025-11-22
 
