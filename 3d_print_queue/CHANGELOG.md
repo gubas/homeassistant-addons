@@ -3,9 +3,15 @@
 
 
 
+
 # Changelog
 
-## [0.3.4] - 2025-11-22
+## [0.3.5] - 2025-11-22
+
+### Fixed
+- Bouton "Voir la queue" compatible ingress (chemin dynamique)
+- Log d'erreur explicite si ajout à la to-do échoue
+- Route POST /submit et /submit/ bien exposées et versionnées sur GitHub
 
 ### Fixed
 - Bouton "Voir la queue" compatible ingress (chemin dynamique)

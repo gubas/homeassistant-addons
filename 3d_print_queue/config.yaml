@@ -1,6 +1,6 @@
 name: "3D Print Queue"
 description: "Queue d'impression 3D familiale - Liens MakerWorld uniquement"
-version: "0.3.4"
+version: "0.3.5"
 slug: "3d_print_queue"
 url: "https://github.com/gubas/homeassistant-addons"
 init: false
