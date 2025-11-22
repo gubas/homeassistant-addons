@@ -150,37 +150,31 @@ def view_queue():
     return html
 
 
-@app.route('/submit', methods=['POST'])
+
+@app.route('/submit', method=['POST'])
 def submit_print():
     """Soumet une nouvelle demande d'impression"""
     response.content_type = 'application/json'
-    
     try:
         # Récupération des données du formulaire
         url = request.forms.get('url', '').strip()
         name = request.forms.get('name', '').strip()
         color = request.forms.get('color', 'Blanc')
         requester = request.forms.get('requester', '').strip()
-        
         # Si pas de requester, utiliser le header Ingress
         if not requester:
             ingress_user = request.headers.get('X-Ingress-User')
             requester = ingress_user if ingress_user else 'Anonyme'
-        
         # Validation
         is_valid, result = validate_makerworld_url(url)
         if not is_valid:
             response.status = 400
             return json.dumps({'error': result})
-        
         model_id = result
-        
         if not name:
             name = extract_model_name_from_url(url)
-        
         # Création de l'entrée
         ha_api = HomeAssistantAPI()
-        
         queue_item = {
             'id': datetime.now().strftime('%Y%m%d%H%M%S'),
             'name': name,
@@ -191,24 +185,25 @@ def submit_print():
             'timestamp': datetime.now().isoformat(),
             'status': 'pending'
         }
-        
         # Sauvegarde
         queue = load_queue()
         queue.append(queue_item)
         save_queue(queue)
-        
         # Home Assistant
         ha_api.add_to_todo_list(queue_item)
         ha_api.send_notification(
             '🖨️ Nouvelle demande d\'impression',
             f"{requester} demande: {name} ({color})"
         )
-        
         return json.dumps({'message': 'Demande ajoutée avec succès!', 'item': queue_item})
-        
     except Exception as e:
         response.status = 500
         return json.dumps({'error': str(e)})
+
+# Route alternative pour /submit/ (avec slash final)
+@app.route('/submit/', method=['POST'])
+def submit_print_slash():
+    return submit_print()
 
 
 @app.route('/api/queue')

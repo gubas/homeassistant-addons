@@ -1,7 +1,13 @@
 
 
 
+
 # Changelog
+
+## [0.3.4] - 2025-11-22
+
+### Fixed
+- Route POST /submit et /submit/ bien exposées et versionnées sur GitHub
 
 ## [0.3.3] - 2025-11-22
 
