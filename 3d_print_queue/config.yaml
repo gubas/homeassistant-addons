@@ -19,7 +19,7 @@ ports:
   5000/tcp: 5000
 ports_description:
   5000/tcp: "Interface web de la queue d'impression"
-webui: "[PROTO:ingress]://[HOST]/[PORT:ingress]"
+webui: "http://[HOST]:[PORT:5000]"
 startup: application
 boot: auto
 options:
