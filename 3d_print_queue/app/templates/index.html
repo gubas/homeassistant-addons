@@ -186,7 +186,7 @@
             <form id="printForm">
                 <div class="form-group">
                     <label for="name">Nom du modèle</label>
-                    <input type="text" id="name" name="name" placeholder="Ex: Support téléphone" required>
+                    <input type="text" id="name" name="name" placeholder="Ex: Support téléphone">
                     <div class="help-text">Laissez vide pour auto-détection depuis l'URL</div>
                 </div>
 
@@ -266,10 +266,10 @@
             e.preventDefault();
 
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+            const urlValue = formData.get('url');
 
             // Validate MakerWorld URL
-            if (!data.url.includes('makerworld.com')) {
+            if (!urlValue || !urlValue.includes('makerworld.com')) {
                 showAlert('❌ Veuillez fournir un lien MakerWorld valide', 'error');
                 return;
             }
@@ -277,10 +277,7 @@
             try {
                 const response = await fetch('/submit', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
                 const result = await response.json();
