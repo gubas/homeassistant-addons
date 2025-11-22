@@ -43,7 +43,6 @@ class HomeAssistantAPI:
         try:
             summary = f"🖨️ {item_data['name']} - {item_data['color']}"
             description = f"Demandé par: {item_data['requester']}\nLien: {item_data['url']}"
-            
             response = requests.post(
                 f'{HA_URL}/api/services/todo/add_item',
                 headers=self.headers,
@@ -54,9 +53,11 @@ class HomeAssistantAPI:
                 },
                 timeout=5
             )
+            if response.status_code not in [200, 201]:
+                print(f"[ERREUR TODO] Status: {response.status_code} | Body: {response.text}")
             return response.status_code in [200, 201]
         except Exception as e:
-            print(f"Erreur ajout to-do: {e}")
+            print(f"[EXCEPTION TODO] Erreur ajout to-do: {e}")
             return False
     
     def send_notification(self, title, message):
