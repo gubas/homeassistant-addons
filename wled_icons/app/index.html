@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang='fr'>
+<head>
+    <meta charset='utf-8'/>
+    <meta name='viewport' content='width=device-width,initial-scale=1'/>
+    <title>WLED Icons</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+</head>
+<body>
+    <div class='container'>
+        <div class='card card-header'>
+            <h1 style='display:flex; align-items:center; gap:0.5rem;'>
+                <span class="mdi mdi-led-strip-variant" style='font-size:2rem; line-height:1;'></span>
+                WLED Icons
+            </h1>
+            <p class='subtitle'>Affichage d'icônes LaMetric sur matrice LED 8x8</p>
+            <a href='https://developer.lametric.com/icons' target='_blank'>🔍 Parcourir la galerie LaMetric</a>
+        </div>
+        
+        <div class='card'>
+            <div class='section-title'><span class="mdi mdi-cog" style='margin-right:0.35rem;'></span>Configuration</div>
+            <form id='f'>
+                <label>Adresse WLED</label>
+                <input name='host' type='text' required placeholder='192.168.1.50' autocomplete='off'/>
+                
+                <label>ID Icône (LaMetric ou WI...)</label>
+                <input name='icon_id' type='text' placeholder='1486 ou WI1234567890123' onchange='previewIcon()' autocomplete='off'/>
+                
+                <div id='iconPreview'></div>
+                
+                <label>Couleur personnalisée (optionnel)</label>
+                <input name='color' type='text' placeholder='#18BCF2' autocomplete='off'/>
+
+                <div class='brightness-control' style='margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: var(--card-bg); border-radius: 6px; border: 1px solid var(--border);'>
+                    <label style='margin: 0; font-size: 0.9rem; white-space: nowrap;'>💡 Luminosité:</label>
+                    <input type='range' name='brightness' id='brightnessSlider' min='1' max='255' value='255' style='flex: 1; cursor: pointer;'/>
+                    <span id='brightnessValue' style='min-width: 3rem; text-align: right; font-weight: 600;'>255</span>
+                </div>
+                
+                <button type='button' onclick='toggleOrientation()' class='btn-secondary' style='margin-top: 1rem'>⚙️ Options d'orientation</button>
+                
+                <div id='orientationSection' style='display: none'>
+                    <div class='section-title'>Orientation</div>
+                    <div class='checkbox-group'>
+                        <label class='checkbox-label'><input type='checkbox' name='flip_h'/>Miroir horizontal</label>
+                        <label class='checkbox-label'><input type='checkbox' name='flip_v'/>Miroir vertical</label>
+                    </div>
+                    
+                    <label>Rotation</label>
+                    <select name='rotate'>
+                        <option value='0'>0°</option>
+                        <option value='90'>90°</option>
+                        <option value='180'>180°</option>
+                        <option value='270'>270°</option>
+                    </select>
+                </div>
+                
+                <button type='button' onclick='toggleAnimation()' class='btn-secondary' style='margin-top: 1rem'>🎬 Options d'animation</button>
+                
+                <div id='animationSection' style='display: none'>
+                    <div class='section-title'>Animation (GIF uniquement)</div>
+                    <label class='checkbox-label'>
+                        <input type='checkbox' name='animate' checked/>Activer l'animation
+                    </label>
+                    <div class='inline-inputs'>
+                        <div>
+                            <label>FPS</label>
+                            <input name='icon_fps' type='number' placeholder='Auto' min='1' max='60'/>
+                        </div>
+                        <div>
+                            <label>Boucles (-1 = infini)</label>
+                            <input name='icon_loop' type='number' value='1' min='-1' max='999'/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class='actions-row'>
+                    <button type='button' onclick='sendIcon()' class='btn-primary' title='Afficher sur WLED'>📤</button>
+                    <button type='button' onclick='stopAnimation()' class='btn-secondary' title='Arrêter l\'animation'>⏹️</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class='card'>
+            <div class='section-title'>🎨 Créer une Icône Personnalisée</div>
+            <div class='editor-tabs'>
+                <button class='tab-btn active' onclick='switchTab("draw")' id='tabDraw'>✏️ Dessin</button>
+                <button class='tab-btn' onclick='switchTab("animation")' id='tabAnimation'>🎬 Animation</button>
+            </div>
+            
+            <div id='pixelEditor' class='tab-content active'>
+                <div class='editor-layout'>
+                    <div class='editor-controls'>
+                        <div class='color-palette'>
+                        <div class='palette-section'>
+                            <div class='color-swatch' style='background: #FFFFFF' data-color='#FFFFFF' title='Blanc'></div>
+                            <div class='color-swatch' style='background: #FF0000' data-color='#FF0000' title='Rouge'></div>
+                            <div class='color-swatch' style='background: #FF69B4' data-color='#FF69B4' title='Rose'></div>
+                            <div class='color-swatch' style='background: #FF00FF' data-color='#FF00FF' title='Magenta'></div>
+                        </div>
+                        <div class='palette-section'>
+                            <div class='color-swatch' style='background: #FF00F0' data-color='#FF00F0' title='Violet clair'></div>
+                            <div class='color-swatch' style='background: #8000FF' data-color='#8000FF' title='Violet'></div>
+                            <div class='color-swatch' style='background: #800080' data-color='#800080' title='Pourpre'></div>
+                            <div class='color-swatch' style='background: #0000FF' data-color='#0000FF' title='Bleu'></div>
+                        </div>
+                        <div class='palette-section'>
+                            <div class='color-swatch' style='background: #0099FF' data-color='#0099FF' title='Cyan foncé'></div>
+                            <div class='color-swatch' style='background: #00FFFF' data-color='#00FFFF' title='Cyan'></div>
+                            <div class='color-swatch' style='background: #00FF00' data-color='#00FF00' title='Vert'></div>
+                            <div class='color-swatch' style='background: #90EE90' data-color='#90EE90' title='Vert clair'></div>
+                        </div>
+                        <div class='palette-section'>
+                            <div class='color-swatch' style='background: #FFFF99' data-color='#FFFF99' title='Jaune pâle'></div>
+                            <div class='color-swatch' style='background: #FFFF00' data-color='#FFFF00' title='Jaune'></div>
+                            <div class='color-swatch' style='background: #FFA500' data-color='#FFA500' title='Orange'></div>
+                            <div class='color-swatch' style='background: #8B4513' data-color='#8B4513' title='Marron'></div>
+                        </div>
+                        <div class='palette-section'>
+                            <div class='color-swatch' style='background: #C0C0C0' data-color='#C0C0C0' title='Gris clair'></div>
+                            <div class='color-swatch' style='background: #808080' data-color='#808080' title='Gris'></div>
+                            <div class='color-swatch' style='background: #404040' data-color='#404040' title='Gris foncé'></div>
+                            <div class='color-swatch selected' style='background: #000000' data-color='#000000' title='Noir'></div>
+                        </div>
+                    </div>
+                        <div class='current-color-display'>
+                            <label>Couleur actuelle</label>
+                            <div class='current-color' style='background: #000000'></div>
+                            <input type='color' id='customColor' value='#000000' title='Sélecteur de couleur'/>
+                        </div>
+                    </div>
+                    
+                    <div style='display: flex; gap: 1rem; align-items: flex-start;'>
+                        <canvas id='pixelCanvas'></canvas>
+                        
+                        <div style='display: flex; flex-direction: column; gap: 0.25rem;'>
+                            <button type='button' onclick='undo()' class='btn-secondary btn-icon' title='Annuler' style='width: 32px; height: 32px; padding: 0; font-size: 1rem;'>↶</button>
+                            <button type='button' onclick='redo()' class='btn-secondary btn-icon' title='Refaire' style='width: 32px; height: 32px; padding: 0; font-size: 1rem;'>↷</button>
+                            <button type='button' onclick='toggleSymmetry("h")' id='btnSymH' class='btn-secondary btn-icon' title='Symétrie horizontale' style='width: 32px; height: 32px; padding: 0; font-size: 0.9rem;'>↔️</button>
+                            <button type='button' onclick='toggleSymmetry("v")' id='btnSymV' class='btn-secondary btn-icon' title='Symétrie verticale' style='width: 32px; height: 32px; padding: 0; font-size: 0.9rem;'>↕️</button>
+                            <button type='button' onclick='clearCanvas()' class='btn-secondary btn-icon' title='Effacer' style='width: 32px; height: 32px; padding: 0; font-size: 0.9rem;'>🗑️</button>
+                            <button type='button' onclick='fillCanvas()' class='btn-secondary btn-icon' title='Remplir' style='width: 32px; height: 32px; padding: 0; font-size: 0.9rem;'>🎨</button>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+                <div class='center-actions'>
+                    <button type='button' onclick='openSaveDialog()' class='btn-primary save-button'>💾 Sauvegarder</button>
+                </div>
+            </div>
+            
+            <div id='animationEditor' class='tab-content'>
+                <div class='animation-controls'>
+                    <div class='section-title' style='margin: 0'>🎬 Animation Frame par Frame</div>
+                    <div class='frame-controls'>
+                        <button type='button' onclick='addFrame()' class='btn-secondary btn-icon' title='Ajouter frame'>➕</button>
+                        <button type='button' onclick='duplicateFrame()' class='btn-secondary btn-icon' title='Dupliquer frame'>📋</button>
+                        <button type='button' onclick='deleteFrame()' class='btn-secondary btn-icon' title='Supprimer frame'>🗑️</button>
+                        <button type='button' onclick='toggleAnimationPreview()' class='btn-secondary' id='previewBtn'>▶️ Prévisualiser</button>
+                        <canvas id='animationPreview' class='animation-preview' style='display:none'></canvas>
+                        <div class='frame-info'>
+                            <span>Frame <span id='currentFrameNum'>1</span>/<span id='totalFrames'>1</span></span>
+                        </div>
+                        <div style='display:flex; gap:0.5rem; align-items:center; margin-left:auto'>
+                            <label style='margin:0; font-size:0.9rem'>FPS:</label>
+                            <input type='number' id='animFps' value='8' min='1' max='30' style='width:60px'/>
+                        </div>
+                    </div>
+                    <div class='frame-list' id='frameList'></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class='card card-library'>
+            <div class='section-title'>📚 Mes Créations Sauvegardées</div>
+            <div class='saved-icons' id='savedIconsList'></div>
+        </div>
+        
+        <div class='dialog-overlay' id='dialogOverlay' onclick='closeSaveDialog()'></div>
+        <div class='save-dialog' id='saveDialog'>
+            <h3 style='margin-top: 0'>💾 Sauvegarder la création</h3>
+            
+            <label>ID généré</label>
+            <input type='text' id='generatedIconId' readonly onclick='copyIconIdFromDialog()' title='Cliquer pour copier' style='width: 100%; margin-bottom: 1rem; background: var(--input-bg); color: var(--primary); font-family: "Courier New", monospace; font-weight: 600; text-align: center; padding: 0.75rem; font-size: 0.9rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer;'/>
+            
+            <label>Nom de l'icône (optionnel)</label>
+            <input type='text' id='iconName' placeholder='Mon icône' style='width: 100%; margin-bottom: 1rem'/>
+            <div style='display: flex; gap: 0.5rem; justify-content: flex-end'>
+                <button type='button' onclick='closeSaveDialog()' class='btn-secondary'>Annuler</button>
+                <button type='button' onclick='saveIconToLibrary()' class='btn-primary'>Sauvegarder</button>
+            </div>
+        </div>
+        
+        <!--
+        <div class='card'>
+            <div class='section-title'>Upload GIF personnalisé</div>
+            <form id='gifForm'>
+                <label>Fichier GIF (8x8 pixels)</label>
+                <input type='file' accept='image/gif' id='gif'/>
+                <div class='inline-inputs' style='margin-top:1rem'>
+                    <div>
+                        <label>FPS</label>
+                        <input name='fps' type='number' placeholder='Auto' min='1' max='60'/>
+                    </div>
+                    <div>
+                        <label>Boucles (-1 = infini)</label>
+                        <input name='loop' type='number' value='1' min='-1' max='999'/>
+                    </div>
+                </div>
+                <button type='button' onclick='sendGif()'>Afficher GIF</button>
+            </form>
+        </div>
+        -->
+        
+        <div id='msg'></div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
