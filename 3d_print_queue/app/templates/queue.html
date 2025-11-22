@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 Queue d'impression</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .queue-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .queue-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .queue-empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .queue-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .queue-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .queue-item-info {
+            flex: 1;
+        }
+
+        .queue-item-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .queue-item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .queue-item-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-color {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+
+        .btn-delete {
+            padding: 10px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .queue-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .btn-delete {
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .queue-item-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Queue d'impression 3D</h1>
+            <a href="/" class="btn-back">← Retour au formulaire</a>
+        </div>
+
+        <div class="queue-container">
+            <div class="stats" id="stats"></div>
+            
+            <div id="queueList"></div>
+        </div>
+    </div>
+
+    <script>
+        loadQueue();
+
+        async function loadQueue() {
+            try {
+                const response = await fetch('/api/queue');
+                const queue = await response.json();
+                
+                displayStats(queue);
+                displayQueue(queue);
+            } catch (error) {
+                console.error('Erreur chargement queue:', error);
+            }
+        }
+
+        function displayStats(queue) {
+            const totalItems = queue.length;
+            const totalWeight = queue.reduce((sum, item) => sum + item.weight, 0);
+            const uniqueRequesters = new Set(queue.map(item => item.requester)).size;
+            
+            const statsHtml = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalItems}</div>
+                    <div class="stat-label">Demandes en attente</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${Math.round(totalWeight)}g</div>
+                    <div class="stat-label">Poids total estimé</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${uniqueRequesters}</div>
+                    <div class="stat-label">Personnes différentes</div>
+                </div>
+            `;
+            
+            document.getElementById('stats').innerHTML = statsHtml;
+        }
+
+        function displayQueue(queue) {
+            const queueList = document.getElementById('queueList');
+            
+            if (queue.length === 0) {
+                queueList.innerHTML = `
+                    <div class="queue-empty">
+                        <div class="queue-empty-icon">📭</div>
+                        <h2>Aucune demande en attente</h2>
+                        <p>La queue d'impression est vide pour le moment</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const queueHtml = queue.map(item => {
+                const date = new Date(item.timestamp).toLocaleString('fr-FR');
+                const stockBadge = item.stock_sufficient 
+                    ? '<span class="badge badge-success">✅ Stock OK</span>'
+                    : '<span class="badge badge-warning">⚠️ Stock insuffisant</span>';
+                
+                return `
+                    <div class="queue-item">
+                        <div class="queue-item-info">
+                            <div class="queue-item-title">
+                                🖨️ ${item.name}
+                            </div>
+                            <div class="queue-item-meta">
+                                <span>👤 ${item.requester}</span>
+                                <span>🎨 <span class="badge badge-color">${item.color}</span></span>
+                                <span>⚖️ ${item.weight}g</span>
+                                <span>📅 ${date}</span>
+                                <span>${stockBadge}</span>
+                            </div>
+                        </div>
+                        <button class="btn-delete" onclick="deleteItem('${item.id}')">
+                            🗑️ Supprimer
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            queueList.innerHTML = queueHtml;
+        }
+
+        async function deleteItem(itemId) {
+            if (!confirm('Supprimer cette demande d\'impression ?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/delete/${itemId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    loadQueue();
+                }
+            } catch (error) {
+                console.error('Erreur suppression:', error);
+                alert('Erreur lors de la suppression');
+            }
+        }
+
+        // Rafraîchir automatiquement toutes les 30 secondes
+        setInterval(loadQueue, 30000);
+    </script>
+</body>
+</html>

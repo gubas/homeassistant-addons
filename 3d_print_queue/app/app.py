@@ -1,0 +1,241 @@
+"""
+3D Print Queue - Application Bottle ultra-légère
+Gestion de queue d'impressions 3D depuis MakerWorld uniquement
+"""
+from bottle import Bottle, request, response, static_file, template
+import os
+import json
+import requests
+from datetime import datetime
+from pathlib import Path
+import re
+
+app = Bottle()
+
+# Configuration
+TODO_LIST = os.getenv('TODO_LIST', 'todo.impressions_3d')
+SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '')
+HA_URL = os.getenv('HA_URL', 'http://supervisor/core')
+INGRESS_PATH = os.getenv('INGRESS_PATH', '')
+
+# Dossier de données
+DATA_FOLDER = Path('/data')
+DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+QUEUE_FILE = DATA_FOLDER / 'queue.json'
+
+FILAMENT_COLORS = [
+    'Blanc', 'Noir', 'Gris', 'Rouge', 'Bleu', 'Vert', 
+    'Jaune', 'Orange', 'Violet', 'Rose', 'Marron', 'Transparent'
+]
+
+
+class HomeAssistantAPI:
+    """Interface avec Home Assistant"""
+    
+    def __init__(self):
+        self.headers = {
+            'Authorization': f'Bearer {SUPERVISOR_TOKEN}',
+            'Content-Type': 'application/json'
+        }
+    
+    def add_to_todo_list(self, item_data):
+        """Ajoute un élément à la To-Do List HA"""
+        try:
+            summary = f"🖨️ {item_data['name']} - {item_data['color']}"
+            description = f"Demandé par: {item_data['requester']}\nLien: {item_data['url']}"
+            
+            response = requests.post(
+                f'{HA_URL}/api/services/todo/add_item',
+                headers=self.headers,
+                json={
+                    'entity_id': TODO_LIST,
+                    'item': summary,
+                    'description': description
+                },
+                timeout=5
+            )
+            return response.status_code in [200, 201]
+        except Exception as e:
+            print(f"Erreur ajout to-do: {e}")
+            return False
+    
+    def send_notification(self, title, message):
+        """Envoie une notification via HA"""
+        try:
+            requests.post(
+                f'{HA_URL}/api/services/notify/notify',
+                headers=self.headers,
+                json={
+                    'title': title,
+                    'message': message
+                },
+                timeout=5
+            )
+        except Exception as e:
+            print(f"Erreur notification: {e}")
+
+
+def validate_makerworld_url(url):
+    """Valide qu'une URL est bien un lien MakerWorld valide"""
+    if not url:
+        return False, "URL vide"
+    
+    if 'makerworld.com' not in url.lower():
+        return False, "Seuls les liens MakerWorld sont acceptés"
+    
+    model_match = re.search(r'/models/(\d+)', url)
+    if not model_match:
+        return False, "Format de lien MakerWorld invalide"
+    
+    return True, model_match.group(1)
+
+
+def extract_model_name_from_url(url):
+    """Extrait le nom du modèle depuis l'URL MakerWorld"""
+    try:
+        parts = url.split('/')[-1]
+        name_part = parts.split('-', 1)[-1] if '-' in parts else parts
+        name = name_part.replace('-', ' ').title()
+        return name
+    except:
+        return "Modèle MakerWorld"
+
+
+def load_queue():
+    """Charge la queue depuis le fichier JSON"""
+    if QUEUE_FILE.exists():
+        with open(QUEUE_FILE, 'r') as f:
+            return json.load(f)
+    return []
+
+
+def save_queue(queue):
+    """Sauvegarde la queue dans le fichier JSON"""
+    with open(QUEUE_FILE, 'w') as f:
+        json.dump(queue, f, indent=2)
+
+
+@app.route('/')
+def index():
+    """Page principale"""
+    html_file = Path(__file__).parent / 'templates' / 'index.html'
+    return html_file.read_text()
+
+
+@app.route('/queue')
+def view_queue():
+    """Affiche la queue"""
+    queue = load_queue()
+    html_file = Path(__file__).parent / 'templates' / 'queue.html'
+    html = html_file.read_text()
+    
+    # Simple template replacement
+    queue_html = ""
+    for item in queue:
+        queue_html += f"""
+        <div class="queue-item">
+            <div class="item-header">
+                <h3>{item['name']}</h3>
+                <span class="color-badge" style="background: {item['color'].lower()}">{item['color']}</span>
+            </div>
+            <p><strong>Demandé par:</strong> {item['requester']}</p>
+            <p><strong>Lien:</strong> <a href="{item['url']}" target="_blank">MakerWorld</a></p>
+            <p><strong>Date:</strong> {item['timestamp'][:10]}</p>
+            <button onclick="deleteItem('{item['id']}')" class="btn-delete">🗑️ Supprimer</button>
+        </div>
+        """
+    
+    html = html.replace('{{QUEUE_ITEMS}}', queue_html if queue_html else '<p>Aucune impression en attente</p>')
+    html = html.replace('{{QUEUE_COUNT}}', str(len(queue)))
+    return html
+
+
+@app.route('/submit', methods=['POST'])
+def submit_print():
+    """Soumet une nouvelle demande d'impression"""
+    response.content_type = 'application/json'
+    
+    try:
+        # Récupération des données du formulaire
+        url = request.forms.get('url', '').strip()
+        name = request.forms.get('name', '').strip()
+        color = request.forms.get('color', 'Blanc')
+        requester = request.forms.get('requester', '').strip()
+        
+        # Si pas de requester, utiliser le header Ingress
+        if not requester:
+            ingress_user = request.headers.get('X-Ingress-User')
+            requester = ingress_user if ingress_user else 'Anonyme'
+        
+        # Validation
+        is_valid, result = validate_makerworld_url(url)
+        if not is_valid:
+            response.status = 400
+            return json.dumps({'error': result})
+        
+        model_id = result
+        
+        if not name:
+            name = extract_model_name_from_url(url)
+        
+        # Création de l'entrée
+        ha_api = HomeAssistantAPI()
+        
+        queue_item = {
+            'id': datetime.now().strftime('%Y%m%d%H%M%S'),
+            'name': name,
+            'requester': requester,
+            'color': color,
+            'url': url,
+            'model_id': model_id,
+            'timestamp': datetime.now().isoformat(),
+            'status': 'pending'
+        }
+        
+        # Sauvegarde
+        queue = load_queue()
+        queue.append(queue_item)
+        save_queue(queue)
+        
+        # Home Assistant
+        ha_api.add_to_todo_list(queue_item)
+        ha_api.send_notification(
+            '🖨️ Nouvelle demande d\'impression',
+            f"{requester} demande: {name} ({color})"
+        )
+        
+        return json.dumps({'message': 'Demande ajoutée avec succès!', 'item': queue_item})
+        
+    except Exception as e:
+        response.status = 500
+        return json.dumps({'error': str(e)})
+
+
+@app.route('/api/queue')
+def get_queue():
+    """API: Récupère la queue"""
+    response.content_type = 'application/json'
+    return json.dumps(load_queue())
+
+
+@app.route('/api/delete/<item_id>', methods=['DELETE'])
+def delete_item(item_id):
+    """API: Supprime un élément"""
+    response.content_type = 'application/json'
+    queue = load_queue()
+    queue = [item for item in queue if item['id'] != item_id]
+    save_queue(queue)
+    return json.dumps({'success': True})
+
+
+# Support Ingress - mount app sous le path ingress si défini
+if INGRESS_PATH:
+    main_app = Bottle()
+    main_app.mount(INGRESS_PATH, app)
+    run_app = main_app
+else:
+    run_app = app
+
+
+if __name__ == '__main__':
+    run_app.run(host='0.0.0.0', port=5000, debug=False, server='wsgiref')

@@ -1,0 +1,28 @@
+name: "3D Print Queue"
+description: "Queue d'impression 3D familiale - Liens MakerWorld uniquement"
+version: "0.3.0"
+slug: "3d_print_queue"
+url: "https://github.com/gubas/ha_3Dqueue"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+ingress: true
+ingress_port: 5000
+panel_icon: mdi:printer-3d
+panel_title: "Queue d'impression 3D"
+panel_admin: false
+ports:
+  5000/tcp: 5000
+ports_description:
+  5000/tcp: "Interface web de la queue d'impression"
+webui: "[PROTO:ingress]://[HOST]/[PORT:ingress]"
+startup: application
+boot: auto
+options:
+  todo_list: "todo.impressions_3d"
+schema:
+  todo_list: str
