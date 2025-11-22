@@ -1,4 +1,10 @@
+
 # Changelog
+
+## [0.3.1] - 2025-11-22
+
+### Fixed
+- Correction bug champ nom optionnel
 
 ## [0.3.0] - 2025-11-22
 
