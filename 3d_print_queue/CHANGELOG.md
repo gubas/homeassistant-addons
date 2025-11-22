@@ -1,6 +1,12 @@
 
 
+
 # Changelog
+
+## [0.3.3] - 2025-11-22
+
+### Fixed
+- Support complet Ingress : accepte aussi POST sur /submit/ (slash final)
 
 ## [0.3.2] - 2025-11-22
 
