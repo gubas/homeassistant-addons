@@ -275,7 +275,7 @@
             }
 
             try {
-                const response = await fetch('/submit', {
+                const response = await fetch(window.location.pathname + 'submit', {
                     method: 'POST',
                     body: formData
                 });
