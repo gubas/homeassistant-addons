@@ -4,6 +4,10 @@
 
 # Changelog
 
+## 0.5.1
+
+- **Fix:** Lecture de l'option `todo_list` depuis la configuration de l'add-on au lieu d'utiliser une valeur hardcodée.
+
 ## 0.5.0
 
 - **Change:** Suppression complète de l'extraction automatique des métadonnées MakerWorld (bloquée par Cloudflare).

@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.5.0)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.5.1)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
@@ -15,6 +15,7 @@ import sys
 app = Bottle()
 
 # Configuration
+# Configuration
 DATA_DIR = Path('/data')
 if not DATA_DIR.exists():
     DATA_DIR = Path(__file__).parent / 'data'
@@ -23,8 +24,20 @@ if not DATA_DIR.exists():
 QUEUE_FILE = DATA_DIR / 'queue.json'
 HA_TOKEN = os.environ.get('SUPERVISOR_TOKEN')
 HA_URL = "http://supervisor/core"
-TODO_LIST = "todo.file_d_attente_impression_3d"
-SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '') # Keep existing SUPERVISOR_TOKEN for now, will be replaced by HA_TOKEN later
+
+# Load TODO_LIST from add-on options
+OPTIONS_FILE = DATA_DIR / 'options.json'
+TODO_LIST = "todo.impressions_3d"  # Default value
+if OPTIONS_FILE.exists():
+    try:
+        with open(OPTIONS_FILE, 'r') as f:
+            options = json.load(f)
+            TODO_LIST = options.get('todo_list', TODO_LIST)
+            print(f"[CONFIG] Liste To-Do chargée: {TODO_LIST}", flush=True)
+    except Exception as e:
+        print(f"[CONFIG] Erreur lecture options.json: {e}", flush=True)
+
+SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '')
 INGRESS_PATH = os.getenv('INGRESS_PATH', '')
 
 
