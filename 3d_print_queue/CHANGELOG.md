@@ -4,6 +4,10 @@
 
 # Changelog
 
+## 0.4.5
+
+- **Debug:** Ajout de logs détaillés pour diagnostiquer le problème de récupération des métadonnées.
+
 ## 0.4.4
 
 - **Fix:** Ajout de la permission `hassio_api` pour accéder à l'API Home Assistant (To-Do List).

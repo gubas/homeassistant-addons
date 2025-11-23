@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.4)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.5)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
@@ -51,11 +51,19 @@ def fetch_makerworld_metadata(url):
             return None
 
         html_content = result.stdout
+        print(f"[METADATA] Récupéré {len(html_content)} caractères")
+        print(f"[METADATA] Premières 500 chars: {html_content[:500]}")
+        
         soup = BeautifulSoup(html_content, 'html.parser')
         next_data = soup.find('script', id='__NEXT_DATA__')
         
         if not next_data:
             print("[METADATA] Balise __NEXT_DATA__ introuvable")
+            # Check if we got a redirect or error page
+            if '<title>' in html_content:
+                title_start = html_content.find('<title>') + 7
+                title_end = html_content.find('</title>', title_start)
+                print(f"[METADATA] Page title: {html_content[title_start:title_end]}")
             return None
             
         data = json.loads(next_data.string)
