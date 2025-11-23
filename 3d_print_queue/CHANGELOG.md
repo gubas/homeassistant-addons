@@ -4,6 +4,10 @@
 
 # Changelog
 
+## 0.5.2
+
+- **Fix:** Icônes avec fond transparent pour compatibilité thème sombre.
+
 ## 0.5.1
 
 - **Fix:** Lecture de l'option `todo_list` depuis la configuration de l'add-on au lieu d'utiliser une valeur hardcodée.
