@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,7 +44,7 @@
             background: white;
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
         }
 
@@ -109,7 +110,7 @@
             font-size: 0.95em;
         }
 
-        .color-option input[type="radio"]:checked + label {
+        .color-option input[type="radio"]:checked+label {
             border-color: #667eea;
             background: #f0f4ff;
             font-weight: 600;
@@ -172,6 +173,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -198,7 +200,8 @@
 
                 <div class="form-group">
                     <label for="url">Lien MakerWorld <span class="required">*</span></label>
-                    <input type="text" id="url" name="url" placeholder="https://makerworld.com/en/models/123456" required>
+                    <input type="text" id="url" name="url" placeholder="https://makerworld.com/en/models/123456"
+                        required>
                     <div class="help-text">Copiez le lien depuis MakerWorld</div>
                 </div>
 
@@ -243,7 +246,7 @@
                 <button type="submit" class="btn btn-primary">
                     ➕ Ajouter à la queue
                 </button>
-                <button type="button" onclick="window.location.href=window.location.pathname.replace(/[^/]*$/, '') + 'queue'" class="btn btn-secondary">
+                <button type="button" id="btnViewQueue" class="btn btn-secondary">
                     📋 Voir la queue
                 </button>
             </form>
@@ -253,6 +256,16 @@
     <script>
         const form = document.getElementById('printForm');
         const alertBox = document.getElementById('alertBox');
+        const btnViewQueue = document.getElementById('btnViewQueue');
+
+        // Calcul du chemin de base pour gérer Ingress correctement
+        const currentPath = window.location.pathname;
+        const basePath = currentPath.endsWith('/') ? currentPath : currentPath + '/';
+
+        // Configuration du bouton "Voir la queue"
+        btnViewQueue.onclick = () => {
+            window.location.href = basePath + 'queue';
+        };
 
         function showAlert(message, type) {
             alertBox.textContent = message;
@@ -275,7 +288,7 @@
             }
 
             try {
-                const response = await fetch(window.location.pathname + 'submit', {
+                const response = await fetch(basePath + 'submit', {
                     method: 'POST',
                     body: formData
                 });
@@ -296,4 +309,5 @@
         });
     </script>
 </body>
+
 </html>

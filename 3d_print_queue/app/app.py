@@ -128,29 +128,8 @@ def index():
 @app.route('/queue')
 def view_queue():
     """Affiche la queue"""
-    queue = load_queue()
     html_file = Path(__file__).parent / 'templates' / 'queue.html'
-    html = html_file.read_text()
-    
-    # Simple template replacement
-    queue_html = ""
-    for item in queue:
-        queue_html += f"""
-        <div class="queue-item">
-            <div class="item-header">
-                <h3>{item['name']}</h3>
-                <span class="color-badge" style="background: {item['color'].lower()}">{item['color']}</span>
-            </div>
-            <p><strong>Demandé par:</strong> {item['requester']}</p>
-            <p><strong>Lien:</strong> <a href="{item['url']}" target="_blank">MakerWorld</a></p>
-            <p><strong>Date:</strong> {item['timestamp'][:10]}</p>
-            <button onclick="deleteItem('{item['id']}')" class="btn-delete">🗑️ Supprimer</button>
-        </div>
-        """
-    
-    html = html.replace('{{QUEUE_ITEMS}}', queue_html if queue_html else '<p>Aucune impression en attente</p>')
-    html = html.replace('{{QUEUE_COUNT}}', str(len(queue)))
-    return html
+    return html_file.read_text()
 
 
 

@@ -209,23 +209,36 @@
     </div>
 
     <script>
+        // Déterminer le chemin de base pour l'API (compatible Ingress)
+        // On est sur .../queue, on veut .../api/queue
+        const basePath = window.location.pathname.replace(/\/queue\/?$/, '');
+        
         loadQueue();
 
         async function loadQueue() {
             try {
-                const response = await fetch('/api/queue');
+                const response = await fetch(`${basePath}/api/queue`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const queue = await response.json();
                 
                 displayStats(queue);
                 displayQueue(queue);
             } catch (error) {
                 console.error('Erreur chargement queue:', error);
+                document.getElementById('queueList').innerHTML = `
+                    <div class="queue-empty">
+                        <p style="color: red">Erreur de chargement: ${error.message}</p>
+                    </div>
+                `;
             }
         }
 
         function displayStats(queue) {
             const totalItems = queue.length;
-            const totalWeight = queue.reduce((sum, item) => sum + item.weight, 0);
+            // Gestion du poids (champ optionnel)
+            const totalWeight = queue.reduce((sum, item) => sum + (item.weight || 0), 0);
             const uniqueRequesters = new Set(queue.map(item => item.requester)).size;
             
             const statsHtml = `
@@ -234,7 +247,7 @@
                     <div class="stat-label">Demandes en attente</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">${Math.round(totalWeight)}g</div>
+                    <div class="stat-value">${totalWeight > 0 ? Math.round(totalWeight) + 'g' : '-'}</div>
                     <div class="stat-label">Poids total estimé</div>
                 </div>
                 <div class="stat-card">
@@ -262,10 +275,18 @@
             
             const queueHtml = queue.map(item => {
                 const date = new Date(item.timestamp).toLocaleString('fr-FR');
-                const stockBadge = item.stock_sufficient 
-                    ? '<span class="badge badge-success">✅ Stock OK</span>'
-                    : '<span class="badge badge-warning">⚠️ Stock insuffisant</span>';
                 
+                // Gestion du stock (champ optionnel)
+                let stockBadge = '';
+                if (item.stock_sufficient !== undefined) {
+                    stockBadge = item.stock_sufficient 
+                        ? '<span class="badge badge-success">✅ Stock OK</span>'
+                        : '<span class="badge badge-warning">⚠️ Stock insuffisant</span>';
+                }
+                
+                // Gestion du poids (champ optionnel)
+                const weightDisplay = item.weight ? `<span>⚖️ ${item.weight}g</span>` : '';
+
                 return `
                     <div class="queue-item">
                         <div class="queue-item-info">
@@ -275,9 +296,9 @@
                             <div class="queue-item-meta">
                                 <span>👤 ${item.requester}</span>
                                 <span>🎨 <span class="badge badge-color">${item.color}</span></span>
-                                <span>⚖️ ${item.weight}g</span>
+                                ${weightDisplay}
                                 <span>📅 ${date}</span>
-                                <span>${stockBadge}</span>
+                                ${stockBadge}
                             </div>
                         </div>
                         <button class="btn-delete" onclick="deleteItem('${item.id}')">
@@ -296,12 +317,14 @@
             }
             
             try {
-                const response = await fetch(`/api/delete/${itemId}`, {
+                const response = await fetch(`${basePath}/api/delete/${itemId}`, {
                     method: 'DELETE'
                 });
                 
                 if (response.ok) {
                     loadQueue();
+                } else {
+                    alert('Erreur lors de la suppression');
                 }
             } catch (error) {
                 console.error('Erreur suppression:', error);
