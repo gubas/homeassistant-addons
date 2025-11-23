@@ -4,6 +4,10 @@
 
 # Changelog
 
+## 0.4.1
+
+- **Fix:** Ajout de la dépendance manquante `beautifulsoup4`.
+
 ## 0.4.0
 
 - **Feature:** Extraction automatique des métadonnées MakerWorld (Poids, AMS, Couleurs).
