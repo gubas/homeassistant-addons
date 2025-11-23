@@ -8,6 +8,13 @@
 
 # Changelog
 
+## [0.3.9] - 2025-11-23
+
+### Fixed
+- Correction affichage queue vide (problème path Ingress)
+- Amélioration robustesse navigation (chemins relatifs)
+- Nettoyage code rendu serveur inutile
+
 ## [0.3.7] - 2025-11-23
 
 ### Debug
