@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.3)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.4)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
@@ -31,17 +31,27 @@ INGRESS_PATH = os.getenv('INGRESS_PATH', '')
 
 def fetch_makerworld_metadata(url):
     """Récupère les métadonnées depuis MakerWorld"""
+    import subprocess
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Referer': 'https://makerworld.com/'
-        }
-        resp = requests.get(url, headers=headers, timeout=10)
-        if resp.status_code != 200:
-            print(f"[METADATA] Erreur HTTP {resp.status_code}")
+        # Use curl to bypass anti-bot protection
+        result = subprocess.run(
+            [
+                'curl',
+                '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                '-L',  # Follow redirects
+                url
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        
+        if result.returncode != 0:
+            print(f"[METADATA] Erreur curl (code {result.returncode})")
             return None
 
-        soup = BeautifulSoup(resp.text, 'html.parser')
+        html_content = result.stdout
+        soup = BeautifulSoup(html_content, 'html.parser')
         next_data = soup.find('script', id='__NEXT_DATA__')
         
         if not next_data:
@@ -79,6 +89,9 @@ def fetch_makerworld_metadata(url):
         print(f"[METADATA] Succès: {metadata}")
         return metadata
         
+    except subprocess.TimeoutExpired:
+        print("[METADATA] Timeout lors de la requête curl")
+        return None
     except Exception as e:
         print(f"[METADATA] Exception: {e}")
         return None

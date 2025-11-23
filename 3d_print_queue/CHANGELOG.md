@@ -4,6 +4,11 @@
 
 # Changelog
 
+## 0.4.4
+
+- **Fix:** Ajout de la permission `hassio_api` pour accéder à l'API Home Assistant (To-Do List).
+- **Fix:** Utilisation de `curl` au lieu de `requests` pour contourner la protection anti-bot de MakerWorld.
+
 ## 0.4.3
 
 - **Fix:** Correction de la détection de l'utilisateur (support des headers `X-Remote-User-*`).
