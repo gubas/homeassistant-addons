@@ -2,13 +2,19 @@
 
 
 
-
-
-
-
 # Changelog
 
+## 0.4.0
+
+- **Feature:** Extraction automatique des métadonnées MakerWorld (Poids, AMS, Couleurs).
+- **Feature:** Affichage des badges de filaments et AMS dans la queue.
+- **Fix:** Nettoyage du code et suppression de configurations redondantes.
+
 ## [0.3.9] - 2025-11-23
+
+### Added
+- Affichage du nom de l'utilisateur courant sur la page d'accueil
+- Pré-remplissage du champ "Votre nom" avec l'utilisateur Home Assistant
 
 ### Fixed
 - Correction affichage queue vide (problème path Ingress)

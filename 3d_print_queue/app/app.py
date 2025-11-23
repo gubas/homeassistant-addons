@@ -1,9 +1,9 @@
-print("[DEBUG] Démarrage app.py (version 0.3.9)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.0)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
 """
-from bottle import Bottle, request, response, static_file, template
+from bottle import Bottle, request, response, static_file, template, run
 import os
 import json
 import requests
@@ -11,19 +11,79 @@ from datetime import datetime
 from pathlib import Path
 import re
 import sys
+from bs4 import BeautifulSoup
 
 app = Bottle()
 
 # Configuration
-TODO_LIST = os.getenv('TODO_LIST', 'todo.impressions_3d')
-SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '')
-HA_URL = os.getenv('HA_URL', 'http://supervisor/core')
+DATA_DIR = Path('/data')
+if not DATA_DIR.exists():
+    DATA_DIR = Path(__file__).parent / 'data'
+    DATA_DIR.mkdir(exist_ok=True)
+
+QUEUE_FILE = DATA_DIR / 'queue.json'
+HA_TOKEN = os.environ.get('SUPERVISOR_TOKEN')
+HA_URL = "http://supervisor/core"
+TODO_LIST = "todo.file_d_attente_impression_3d"
+SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '') # Keep existing SUPERVISOR_TOKEN for now, will be replaced by HA_TOKEN later
 INGRESS_PATH = os.getenv('INGRESS_PATH', '')
 
+
+def fetch_makerworld_metadata(url):
+    """Récupère les métadonnées depuis MakerWorld"""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code != 200:
+            print(f"[METADATA] Erreur HTTP {resp.status_code}")
+            return None
+
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        next_data = soup.find('script', id='__NEXT_DATA__')
+        
+        if not next_data:
+            print("[METADATA] Balise __NEXT_DATA__ introuvable")
+            return None
+            
+        data = json.loads(next_data.string)
+        design = data.get('props', {}).get('pageProps', {}).get('design', {})
+        instances = design.get('instances', [])
+        
+        if not instances:
+            print("[METADATA] Aucune instance trouvée")
+            return None
+            
+        # Trouver l'instance par défaut ou prendre la première
+        target_instance = instances[0]
+        for inst in instances:
+            if inst.get('isDefault'):
+                target_instance = inst
+                break
+                
+        metadata = {
+            'weight': target_instance.get('weight', 0),
+            'needs_ams': target_instance.get('needAms', False),
+            'filaments': []
+        }
+        
+        for fil in target_instance.get('instanceFilaments', []):
+            metadata['filaments'].append({
+                'color': fil.get('color'),
+                'type': fil.get('type'),
+                'used_g': fil.get('usedG')
+            })
+            
+        print(f"[METADATA] Succès: {metadata}")
+        return metadata
+        
+    except Exception as e:
+        print(f"[METADATA] Exception: {e}")
+        return None
+
 # Dossier de données
-DATA_FOLDER = Path('/data')
-DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-QUEUE_FILE = DATA_FOLDER / 'queue.json'
+
 
 FILAMENT_COLORS = [
     'Blanc', 'Noir', 'Gris', 'Rouge', 'Bleu', 'Vert', 
@@ -121,8 +181,11 @@ def save_queue(queue):
 @app.route('/')
 def index():
     """Page principale"""
+    user = request.headers.get('X-Ingress-User', '')
+    print(f"[DEBUG] User detected: {user}", flush=True)
     html_file = Path(__file__).parent / 'templates' / 'index.html'
-    return html_file.read_text()
+    html = html_file.read_text()
+    return html.replace('{{USER}}', user)
 
 
 @app.route('/queue')
@@ -155,6 +218,10 @@ def submit_print():
         model_id = result
         if not name:
             name = extract_model_name_from_url(url)
+        
+        # Récupération des métadonnées
+        metadata = fetch_makerworld_metadata(url)
+        
         ha_api = HomeAssistantAPI()
         queue_item = {
             'id': datetime.now().strftime('%Y%m%d%H%M%S'),
@@ -166,6 +233,9 @@ def submit_print():
             'timestamp': datetime.now().isoformat(),
             'status': 'pending'
         }
+        
+        if metadata:
+            queue_item.update(metadata)
         print(f"[DEBUG] Ajout à la queue: {queue_item}", flush=True)
         queue = load_queue()
         queue.append(queue_item)

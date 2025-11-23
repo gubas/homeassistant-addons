@@ -179,7 +179,7 @@
         <div class="header">
             <h1>🖨️</h1>
             <h1>Queue d'impression 3D</h1>
-            <p>Ajoutez vos modèles MakerWorld à la queue</p>
+            <p>Bonjour <strong>{{USER}}</strong> ! Ajoutez vos modèles MakerWorld à la queue</p>
         </div>
 
         <div id="alertBox" class="alert"></div>
@@ -194,7 +194,7 @@
 
                 <div class="form-group">
                     <label for="requester">Votre nom</label>
-                    <input type="text" id="requester" name="requester" placeholder="Ex: Papa">
+                    <input type="text" id="requester" name="requester" value="{{USER}}" placeholder="Ex: Papa">
                     <div class="help-text">Laissez vide pour utiliser votre compte Home Assistant</div>
                 </div>
 

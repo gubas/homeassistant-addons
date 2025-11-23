@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,14 +49,14 @@
 
         .btn-back:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         .queue-container {
             background: white;
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .queue-empty {
@@ -194,16 +195,17 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>📋 Queue d'impression 3D</h1>
-            <a href="/" class="btn-back">← Retour au formulaire</a>
+            <a href="#" id="btnBack" class="btn-back">← Retour au formulaire</a>
         </div>
 
         <div class="queue-container">
             <div class="stats" id="stats"></div>
-            
+
             <div id="queueList"></div>
         </div>
     </div>
@@ -212,7 +214,10 @@
         // Déterminer le chemin de base pour l'API (compatible Ingress)
         // On est sur .../queue, on veut .../api/queue
         const basePath = window.location.pathname.replace(/\/queue\/?$/, '');
-        
+
+        // Corriger le lien de retour
+        document.getElementById('btnBack').href = basePath + '/';
+
         loadQueue();
 
         async function loadQueue() {
@@ -222,7 +227,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const queue = await response.json();
-                
+
                 displayStats(queue);
                 displayQueue(queue);
             } catch (error) {
@@ -240,7 +245,7 @@
             // Gestion du poids (champ optionnel)
             const totalWeight = queue.reduce((sum, item) => sum + (item.weight || 0), 0);
             const uniqueRequesters = new Set(queue.map(item => item.requester)).size;
-            
+
             const statsHtml = `
                 <div class="stat-card">
                     <div class="stat-value">${totalItems}</div>
@@ -255,13 +260,13 @@
                     <div class="stat-label">Personnes différentes</div>
                 </div>
             `;
-            
+
             document.getElementById('stats').innerHTML = statsHtml;
         }
 
         function displayQueue(queue) {
             const queueList = document.getElementById('queueList');
-            
+
             if (queue.length === 0) {
                 queueList.innerHTML = `
                     <div class="queue-empty">
@@ -272,18 +277,35 @@
                 `;
                 return;
             }
-            
+
             const queueHtml = queue.map(item => {
                 const date = new Date(item.timestamp).toLocaleString('fr-FR');
-                
+
                 // Gestion du stock (champ optionnel)
                 let stockBadge = '';
                 if (item.stock_sufficient !== undefined) {
-                    stockBadge = item.stock_sufficient 
+                    stockBadge = item.stock_sufficient
                         ? '<span class="badge badge-success">✅ Stock OK</span>'
                         : '<span class="badge badge-warning">⚠️ Stock insuffisant</span>';
                 }
-                
+
+                // Gestion AMS
+                const amsBadge = item.needs_ams
+                    ? '<span class="badge" style="background-color: #9c27b0; color: white;">🌈 AMS</span>'
+                    : '';
+
+                // Gestion des filaments
+                let filamentsDisplay = '';
+                if (item.filaments && item.filaments.length > 0) {
+                    filamentsDisplay = '<div style="display: flex; gap: 4px; flex-wrap: wrap;">' +
+                        item.filaments.map(f =>
+                            `<span class="badge" style="background-color: ${f.color}; color: #333; border: 1px solid #ccc; text-shadow: 0 0 2px white;">${f.type}</span>`
+                        ).join('') +
+                        '</div>';
+                } else {
+                    filamentsDisplay = `<span>🎨 <span class="badge badge-color">${item.color}</span></span>`;
+                }
+
                 // Gestion du poids (champ optionnel)
                 const weightDisplay = item.weight ? `<span>⚖️ ${item.weight}g</span>` : '';
 
@@ -295,10 +317,12 @@
                             </div>
                             <div class="queue-item-meta">
                                 <span>👤 ${item.requester}</span>
-                                <span>🎨 <span class="badge badge-color">${item.color}</span></span>
+                                ${filamentsDisplay}
                                 ${weightDisplay}
+                                ${amsBadge}
                                 <span>📅 ${date}</span>
                                 ${stockBadge}
+                                <span>🔗 <a href="${item.url}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: bold;">Voir le modèle</a></span>
                             </div>
                         </div>
                         <button class="btn-delete" onclick="deleteItem('${item.id}')">
@@ -307,7 +331,7 @@
                     </div>
                 `;
             }).join('');
-            
+
             queueList.innerHTML = queueHtml;
         }
 
@@ -315,12 +339,12 @@
             if (!confirm('Supprimer cette demande d\'impression ?')) {
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${basePath}/api/delete/${itemId}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (response.ok) {
                     loadQueue();
                 } else {
@@ -336,4 +360,5 @@
         setInterval(loadQueue, 30000);
     </script>
 </body>
+
 </html>
