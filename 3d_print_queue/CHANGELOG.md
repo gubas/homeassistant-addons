@@ -4,6 +4,11 @@
 
 # Changelog
 
+## 0.4.6
+
+- **Fix:** Correction de la permission API (`homeassistant_api` au lieu de `hassio_api`).
+- **Note:** Extraction automatique des métadonnées MakerWorld désactivée (Cloudflare bloque les requêtes automatisées).
+
 ## 0.4.5
 
 - **Debug:** Ajout de logs détaillés pour diagnostiquer le problème de récupération des métadonnées.
