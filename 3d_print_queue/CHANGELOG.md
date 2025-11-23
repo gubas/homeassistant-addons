@@ -4,6 +4,12 @@
 
 # Changelog
 
+## 0.4.3
+
+- **Fix:** Correction de la détection de l'utilisateur (support des headers `X-Remote-User-*`).
+- **Fix:** Mise à jour du User-Agent pour contourner l'erreur 403 de MakerWorld.
+- **Fix:** Correction de la route de suppression (méthode DELETE).
+
 ## 0.4.2
 
 - **Chore:** Ajout de logs de débogage pour analyser les problèmes de détection d'utilisateur.

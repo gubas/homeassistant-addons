@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.2)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.3)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
@@ -33,7 +33,8 @@ def fetch_makerworld_metadata(url):
     """Récupère les métadonnées depuis MakerWorld"""
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://makerworld.com/'
         }
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code != 200:
@@ -189,6 +190,10 @@ def index():
     user = request.headers.get('X-Ingress-User', '')
     if not user:
         # Try other common headers
+        user = request.headers.get('X-Remote-User-Display-Name', '')
+    if not user:
+        user = request.headers.get('X-Remote-User-Name', '')
+    if not user:
         user = request.headers.get('X-Hass-User-ID', '')
         
     print(f"[DEBUG] User detected: {user}", flush=True)
@@ -224,6 +229,10 @@ def submit_print():
         
         if not requester:
             ingress_user = request.headers.get('X-Ingress-User')
+            if not ingress_user:
+                ingress_user = request.headers.get('X-Remote-User-Display-Name')
+            if not ingress_user:
+                ingress_user = request.headers.get('X-Remote-User-Name')
             requester = ingress_user if ingress_user else 'Anonyme'
             
         is_valid, result = validate_makerworld_url(url)
@@ -290,7 +299,7 @@ def get_queue():
     return json.dumps(load_queue())
 
 
-@app.route('/api/delete/<item_id>', methods=['DELETE'])
+@app.route('/api/delete/<item_id>', method=['DELETE'])
 def delete_item(item_id):
     """API: Supprime un élément"""
     response.content_type = 'application/json'
