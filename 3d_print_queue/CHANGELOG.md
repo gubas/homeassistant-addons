@@ -12,6 +12,11 @@
 
 ### Debug
 - Ajout print [DEBUG] Démarrage app.py (version 0.3.6) pour vérifier le code exécuté
+ 
+## [0.3.8] - 2025-11-23
+
+### Debug
+- Affichage des premières lignes de `/app/app.py` au démarrage (via `run.sh`) pour vérifier le code réellement copié dans l'image Docker
 
 ### Debug
 - Ajout de logs détaillés pour chaque étape du POST /submit (données reçues, sauvegarde queue, appel to-do, exceptions)
