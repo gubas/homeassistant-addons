@@ -1,3 +1,4 @@
+print("[DEBUG] Démarrage app.py (version 0.3.6)")
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement

@@ -5,9 +5,13 @@
 
 
 
+
 # Changelog
 
-## [0.3.6] - 2025-11-23
+## [0.3.7] - 2025-11-23
+
+### Debug
+- Ajout print [DEBUG] Démarrage app.py (version 0.3.6) pour vérifier le code exécuté
 
 ### Debug
 - Ajout de logs détaillés pour chaque étape du POST /submit (données reçues, sauvegarde queue, appel to-do, exceptions)
