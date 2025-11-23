@@ -16,6 +16,6 @@ else
 	bashio::log.warning "/app/app.py introuvable"
 fi
 
-# Start Flask application
+# Start Flask application (unbuffered stdout for immediate logs)
 cd /app
-python3 app.py
+python3 -u app.py

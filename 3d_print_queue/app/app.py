@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.3.6)")
+print("[DEBUG] Démarrage app.py (version 0.3.6)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
@@ -10,6 +10,7 @@ import requests
 from datetime import datetime
 from pathlib import Path
 import re
+import sys
 
 app = Bottle()
 
@@ -158,18 +159,18 @@ def submit_print():
     """Soumet une nouvelle demande d'impression"""
     response.content_type = 'application/json'
     try:
-        print("[DEBUG] POST /submit appelé")
+        print("[DEBUG] POST /submit appelé", flush=True)
         url = request.forms.get('url', '').strip()
         name = request.forms.get('name', '').strip()
         color = request.forms.get('color', 'Blanc')
         requester = request.forms.get('requester', '').strip()
-        print(f"[DEBUG] Données reçues: url={url}, name={name}, color={color}, requester={requester}")
+        print(f"[DEBUG] Données reçues: url={url}, name={name}, color={color}, requester={requester}", flush=True)
         if not requester:
             ingress_user = request.headers.get('X-Ingress-User')
             requester = ingress_user if ingress_user else 'Anonyme'
         is_valid, result = validate_makerworld_url(url)
         if not is_valid:
-            print(f"[DEBUG] URL MakerWorld invalide: {result}")
+            print(f"[DEBUG] URL MakerWorld invalide: {result}", flush=True)
             response.status = 400
             return json.dumps({'error': result})
         model_id = result
@@ -186,20 +187,28 @@ def submit_print():
             'timestamp': datetime.now().isoformat(),
             'status': 'pending'
         }
-        print(f"[DEBUG] Ajout à la queue: {queue_item}")
+        print(f"[DEBUG] Ajout à la queue: {queue_item}", flush=True)
         queue = load_queue()
         queue.append(queue_item)
         save_queue(queue)
-        print("[DEBUG] Queue sauvegardée dans /data/queue.json")
+        print("[DEBUG] Queue sauvegardée dans /data/queue.json", flush=True)
+        # Lire et afficher le contenu du fichier queue.json pour vérifier la persistance
+        try:
+            with open(QUEUE_FILE, 'r') as qf:
+                content = qf.read()
+            print(f"[QUEUE_FILE] {content}", flush=True)
+        except Exception as e:
+            print(f"[QUEUE_FILE] Impossible de lire {QUEUE_FILE}: {e}", flush=True)
+
         todo_ok = ha_api.add_to_todo_list(queue_item)
-        print(f"[DEBUG] Ajout à la to-do: {'OK' if todo_ok else 'ECHEC'}")
+        print((f"[DEBUG] Ajout à la to-do: OK") if todo_ok else (f"[DEBUG] Ajout à la to-do: ECHEC"), flush=True)
         ha_api.send_notification(
             '🖨️ Nouvelle demande d\'impression',
             f"{requester} demande: {name} ({color})"
         )
         return json.dumps({'message': 'Demande ajoutée avec succès!', 'item': queue_item})
     except Exception as e:
-        print(f"[EXCEPTION SUBMIT] {e}")
+        print(f"[EXCEPTION SUBMIT] {e}", flush=True)
         response.status = 500
         return json.dumps({'error': str(e)})
 
