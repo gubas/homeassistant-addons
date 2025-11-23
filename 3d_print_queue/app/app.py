@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.6)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.5.0)", flush=True)
 """
 3D Print Queue - Application Bottle ultra-légère
 Gestion de queue d'impressions 3D depuis MakerWorld uniquement
@@ -11,7 +11,6 @@ from datetime import datetime
 from pathlib import Path
 import re
 import sys
-from bs4 import BeautifulSoup
 
 app = Bottle()
 
@@ -28,81 +27,6 @@ TODO_LIST = "todo.file_d_attente_impression_3d"
 SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '') # Keep existing SUPERVISOR_TOKEN for now, will be replaced by HA_TOKEN later
 INGRESS_PATH = os.getenv('INGRESS_PATH', '')
 
-
-def fetch_makerworld_metadata(url):
-    """Récupère les métadonnées depuis MakerWorld"""
-    import subprocess
-    try:
-        # Use curl to bypass anti-bot protection
-        result = subprocess.run(
-            [
-                'curl',
-                '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                '-L',  # Follow redirects
-                url
-            ],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-        
-        if result.returncode != 0:
-            print(f"[METADATA] Erreur curl (code {result.returncode})")
-            return None
-
-        html_content = result.stdout
-        print(f"[METADATA] Récupéré {len(html_content)} caractères")
-        print(f"[METADATA] Premières 500 chars: {html_content[:500]}")
-        
-        soup = BeautifulSoup(html_content, 'html.parser')
-        next_data = soup.find('script', id='__NEXT_DATA__')
-        
-        if not next_data:
-            print("[METADATA] Balise __NEXT_DATA__ introuvable")
-            # Check if we got a redirect or error page
-            if '<title>' in html_content:
-                title_start = html_content.find('<title>') + 7
-                title_end = html_content.find('</title>', title_start)
-                print(f"[METADATA] Page title: {html_content[title_start:title_end]}")
-            return None
-            
-        data = json.loads(next_data.string)
-        design = data.get('props', {}).get('pageProps', {}).get('design', {})
-        instances = design.get('instances', [])
-        
-        if not instances:
-            print("[METADATA] Aucune instance trouvée")
-            return None
-            
-        # Trouver l'instance par défaut ou prendre la première
-        target_instance = instances[0]
-        for inst in instances:
-            if inst.get('isDefault'):
-                target_instance = inst
-                break
-                
-        metadata = {
-            'weight': target_instance.get('weight', 0),
-            'needs_ams': target_instance.get('needAms', False),
-            'filaments': []
-        }
-        
-        for fil in target_instance.get('instanceFilaments', []):
-            metadata['filaments'].append({
-                'color': fil.get('color'),
-                'type': fil.get('type'),
-                'used_g': fil.get('usedG')
-            })
-            
-        print(f"[METADATA] Succès: {metadata}")
-        return metadata
-        
-    except subprocess.TimeoutExpired:
-        print("[METADATA] Timeout lors de la requête curl")
-        return None
-    except Exception as e:
-        print(f"[METADATA] Exception: {e}")
-        return None
 
 # Dossier de données
 
@@ -265,9 +189,6 @@ def submit_print():
         if not name:
             name = extract_model_name_from_url(url)
         
-        # Récupération des métadonnées
-        metadata = fetch_makerworld_metadata(url)
-        
         ha_api = HomeAssistantAPI()
         queue_item = {
             'id': datetime.now().strftime('%Y%m%d%H%M%S'),
@@ -279,9 +200,6 @@ def submit_print():
             'timestamp': datetime.now().isoformat(),
             'status': 'pending'
         }
-        
-        if metadata:
-            queue_item.update(metadata)
         print(f"[DEBUG] Ajout à la queue: {queue_item}", flush=True)
         queue = load_queue()
         queue.append(queue_item)

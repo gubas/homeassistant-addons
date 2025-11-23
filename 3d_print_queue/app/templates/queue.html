@@ -289,26 +289,6 @@
                         : '<span class="badge badge-warning">⚠️ Stock insuffisant</span>';
                 }
 
-                // Gestion AMS
-                const amsBadge = item.needs_ams
-                    ? '<span class="badge" style="background-color: #9c27b0; color: white;">🌈 AMS</span>'
-                    : '';
-
-                // Gestion des filaments
-                let filamentsDisplay = '';
-                if (item.filaments && item.filaments.length > 0) {
-                    filamentsDisplay = '<div style="display: flex; gap: 4px; flex-wrap: wrap;">' +
-                        item.filaments.map(f =>
-                            `<span class="badge" style="background-color: ${f.color}; color: #333; border: 1px solid #ccc; text-shadow: 0 0 2px white;">${f.type}</span>`
-                        ).join('') +
-                        '</div>';
-                } else {
-                    filamentsDisplay = `<span>🎨 <span class="badge badge-color">${item.color}</span></span>`;
-                }
-
-                // Gestion du poids (champ optionnel)
-                const weightDisplay = item.weight ? `<span>⚖️ ${item.weight}g</span>` : '';
-
                 return `
                     <div class="queue-item">
                         <div class="queue-item-info">
@@ -317,9 +297,7 @@
                             </div>
                             <div class="queue-item-meta">
                                 <span>👤 ${item.requester}</span>
-                                ${filamentsDisplay}
-                                ${weightDisplay}
-                                ${amsBadge}
+                                <span>🎨 <span class="badge badge-color">${item.color}</span></span>
                                 <span>📅 ${date}</span>
                                 ${stockBadge}
                                 <span>🔗 <a href="${item.url}" target="_blank" style="color: #667eea; text-decoration: none; font-weight: bold;">Voir le modèle</a></span>

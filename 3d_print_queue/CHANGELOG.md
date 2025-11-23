@@ -4,6 +4,12 @@
 
 # Changelog
 
+## 0.5.0
+
+- **Change:** Suppression complète de l'extraction automatique des métadonnées MakerWorld (bloquée par Cloudflare).
+- **Cleanup:** Retrait de BeautifulSoup et du code associé.
+- **Fix:** Affichage simplifié de la queue sans métadonnées.
+
 ## 0.4.6
 
 - **Fix:** Correction de la permission API (`homeassistant_api` au lieu de `hassio_api`).
