@@ -181,7 +181,16 @@ def save_queue(queue):
 @app.route('/')
 def index():
     """Page principale"""
+    # Debug headers
+    print("[DEBUG] Headers received:", flush=True)
+    for header, value in request.headers.items():
+        print(f"  {header}: {value}", flush=True)
+        
     user = request.headers.get('X-Ingress-User', '')
+    if not user:
+        # Try other common headers
+        user = request.headers.get('X-Hass-User-ID', '')
+        
     print(f"[DEBUG] User detected: {user}", flush=True)
     html_file = Path(__file__).parent / 'templates' / 'index.html'
     html = html_file.read_text()
@@ -195,21 +204,28 @@ def view_queue():
     return html_file.read_text()
 
 
-
 @app.route('/submit', method=['POST'])
 def submit_print():
     """Soumet une nouvelle demande d'impression"""
     response.content_type = 'application/json'
     try:
         print("[DEBUG] POST /submit appelé", flush=True)
+        
+        # Debug headers for submit too
+        print("[DEBUG] Submit Headers:", flush=True)
+        for header, value in request.headers.items():
+            print(f"  {header}: {value}", flush=True)
+
         url = request.forms.get('url', '').strip()
         name = request.forms.get('name', '').strip()
         color = request.forms.get('color', 'Blanc')
         requester = request.forms.get('requester', '').strip()
         print(f"[DEBUG] Données reçues: url={url}, name={name}, color={color}, requester={requester}", flush=True)
+        
         if not requester:
             ingress_user = request.headers.get('X-Ingress-User')
             requester = ingress_user if ingress_user else 'Anonyme'
+            
         is_valid, result = validate_makerworld_url(url)
         if not is_valid:
             print(f"[DEBUG] URL MakerWorld invalide: {result}", flush=True)
