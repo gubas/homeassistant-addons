@@ -4,6 +4,10 @@
 
 # Changelog
 
+## 0.4.2
+
+- **Chore:** Ajout de logs de débogage pour analyser les problèmes de détection d'utilisateur.
+
 ## 0.4.1
 
 - **Fix:** Ajout de la dépendance manquante `beautifulsoup4`.
