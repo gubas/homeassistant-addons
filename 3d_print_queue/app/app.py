@@ -157,24 +157,23 @@ def submit_print():
     """Soumet une nouvelle demande d'impression"""
     response.content_type = 'application/json'
     try:
-        # Récupération des données du formulaire
+        print("[DEBUG] POST /submit appelé")
         url = request.forms.get('url', '').strip()
         name = request.forms.get('name', '').strip()
         color = request.forms.get('color', 'Blanc')
         requester = request.forms.get('requester', '').strip()
-        # Si pas de requester, utiliser le header Ingress
+        print(f"[DEBUG] Données reçues: url={url}, name={name}, color={color}, requester={requester}")
         if not requester:
             ingress_user = request.headers.get('X-Ingress-User')
             requester = ingress_user if ingress_user else 'Anonyme'
-        # Validation
         is_valid, result = validate_makerworld_url(url)
         if not is_valid:
+            print(f"[DEBUG] URL MakerWorld invalide: {result}")
             response.status = 400
             return json.dumps({'error': result})
         model_id = result
         if not name:
             name = extract_model_name_from_url(url)
-        # Création de l'entrée
         ha_api = HomeAssistantAPI()
         queue_item = {
             'id': datetime.now().strftime('%Y%m%d%H%M%S'),
@@ -186,18 +185,20 @@ def submit_print():
             'timestamp': datetime.now().isoformat(),
             'status': 'pending'
         }
-        # Sauvegarde
+        print(f"[DEBUG] Ajout à la queue: {queue_item}")
         queue = load_queue()
         queue.append(queue_item)
         save_queue(queue)
-        # Home Assistant
-        ha_api.add_to_todo_list(queue_item)
+        print("[DEBUG] Queue sauvegardée dans /data/queue.json")
+        todo_ok = ha_api.add_to_todo_list(queue_item)
+        print(f"[DEBUG] Ajout à la to-do: {'OK' if todo_ok else 'ECHEC'}")
         ha_api.send_notification(
             '🖨️ Nouvelle demande d\'impression',
             f"{requester} demande: {name} ({color})"
         )
         return json.dumps({'message': 'Demande ajoutée avec succès!', 'item': queue_item})
     except Exception as e:
+        print(f"[EXCEPTION SUBMIT] {e}")
         response.status = 500
         return json.dumps({'error': str(e)})
 

@@ -4,9 +4,13 @@
 
 
 
+
 # Changelog
 
-## [0.3.5] - 2025-11-22
+## [0.3.6] - 2025-11-23
+
+### Debug
+- Ajout de logs détaillés pour chaque étape du POST /submit (données reçues, sauvegarde queue, appel to-do, exceptions)
 
 ### Fixed
 - Bouton "Voir la queue" compatible ingress (chemin dynamique)
