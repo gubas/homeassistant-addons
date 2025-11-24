@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.3
+
+- **Debug:** Ajout de logs détaillés pour diagnostiquer les problèmes de connexion FTPS et de lecture des timelapses.
+
 ## 0.1.2
 
 - **Fix:** Correction du script `run.sh` pour utiliser bash standard au lieu de bashio.

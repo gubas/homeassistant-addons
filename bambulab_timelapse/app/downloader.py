@@ -25,26 +25,41 @@ class BambuTimelapseDownloader:
     def connect_ftp(self):
         """Connect to printer via FTPS"""
         try:
+            print(f"[FTP] Connexion FTPS à {self.printer_ip}:990...", flush=True)
             ftp = ftplib.FTP_TLS()
+            ftp.set_debuglevel(2)  # Enable verbose FTP logging
             ftp.connect(self.printer_ip, 990, timeout=10)
+            print(f"[FTP] Connexion établie, login avec bblp...", flush=True)
             ftp.login("bblp", self.access_code)
+            print(f"[FTP] Login réussi, activation mode sécurisé...", flush=True)
             ftp.prot_p()  # Enable secure data connection
-            print(f"[FTP] Connecté à {self.printer_ip}")
+            print(f"[FTP] Connecté à {self.printer_ip}", flush=True)
             return ftp
         except Exception as e:
-            print(f"[FTP] Erreur de connexion: {e}")
+            print(f"[FTP] Erreur de connexion: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
             return None
     
     def list_timelapses(self):
         """List all available timelapses on printer"""
+        print(f"[FTP] Tentative de connexion à {self.printer_ip}:990...", flush=True)
         ftp = self.connect_ftp()
         if not ftp:
+            print("[FTP] Échec de connexion", flush=True)
             return []
         
         try:
+            print(f"[FTP] Connexion réussie, accès au dossier {self.ftp_base_path}", flush=True)
             ftp.cwd(self.ftp_base_path)
+            print("[FTP] Lecture de la liste des fichiers...", flush=True)
+            
             files = []
             ftp.retrlines('LIST', files.append)
+            
+            print(f"[FTP] {len(files)} fichiers trouvés", flush=True)
+            for line in files[:5]:  # Show first 5 for debug
+                print(f"[FTP DEBUG] {line}", flush=True)
             
             # Parse file list
             timelapse_files = []
@@ -54,11 +69,15 @@ class BambuTimelapseDownloader:
                     filename = parts[-1]
                     if filename.endswith(('.avi', '.mp4')):
                         timelapse_files.append(filename)
+                        print(f"[FTP] Timelapse trouvé: {filename}", flush=True)
             
+            print(f"[FTP] {len(timelapse_files)} timelapses au total", flush=True)
             ftp.quit()
             return timelapse_files
         except Exception as e:
-            print(f"[FTP] Erreur lecture: {e}")
+            print(f"[FTP] Erreur lecture: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
             try:
                 ftp.quit()
             except:

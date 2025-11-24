@@ -2,7 +2,7 @@
 Web server for Bambulab Timelapse add-on
 Provides UI for viewing and managing timelapses
 """
-print("[INFO] Démarrage server.py (version 0.1.2)", flush=True)
+print("[INFO] Démarrage server.py (version 0.1.3)", flush=True)
 
 from bottle import Bottle, request, response, static_file, template, run
 import os
