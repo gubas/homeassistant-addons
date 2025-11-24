@@ -2,7 +2,7 @@
 Web server for Bambulab Timelapse add-on
 Provides UI for viewing and managing timelapses
 """
-print("[INFO] Démarrage server.py (version 0.1.0)", flush=True)
+print("[INFO] Démarrage server.py (version 0.1.1)", flush=True)
 
 from bottle import Bottle, request, response, static_file, template, run
 import os
@@ -18,7 +18,7 @@ PRINTER_CODE = os.environ.get('PRINTER_ACCESS_CODE', '')
 PRINTER_SERIAL = os.environ.get('PRINTER_SERIAL', '')
 AUTO_DOWNLOAD = os.environ.get('AUTO_DOWNLOAD', 'true').lower() == 'true'
 CONVERT_MP4 = os.environ.get('CONVERT_TO_MP4', 'true').lower() == 'true'
-RESOLUTION = os.environ.get('RESOLUTION', '1080p')
+RESOLUTION = os.environ.get('RESOLUTION', 'original')
 OUTPUT_DIR = "/share/bambulab_timelapses"
 
 # Load config from /data/options.json

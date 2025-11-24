@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1
+
+- **Fix:** Résolution par défaut changée en "original" (la P1S filme en 720p natif, pas besoin d'upscale).
+
 ## 0.1.0
 
 - **Initial release**: Bambulab Timelapse Downloader
