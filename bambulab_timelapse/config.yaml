@@ -1,6 +1,6 @@
 name: "Bambulab Timelapse"
 description: "Télécharge et convertit automatiquement les timelapses de votre imprimante Bambu Lab P1S"
-version: "0.1.1"
+version: "0.1.2"
 slug: "bambulab_timelapse"
 url: "https://github.com/gubas/homeassistant-addons"
 init: false
