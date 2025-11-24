@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.4
+
+- **Fix:** Ajout de `host_network: true` pour permettre l'accès direct au réseau local et résoudre le timeout FTPS.
+
 ## 0.1.3
 
 - **Debug:** Ajout de logs détaillés pour diagnostiquer les problèmes de connexion FTPS et de lecture des timelapses.
