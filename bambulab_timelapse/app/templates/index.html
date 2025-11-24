@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timelapses Bambulab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-card video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+
+        .video-info {
+            padding: 15px;
+        }
+
+        .video-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .video-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .empty {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 100px auto;
+        }
+
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .file-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-item:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Timelapses Bambulab</h1>
+            <div class="actions">
+                <button onclick="refreshGallery()">🔄 Rafraîchir</button>
+                <button onclick="showAvailableTimelapses()">⬇️ Télécharger depuis l'imprimante</button>
+            </div>
+        </header>
+
+        <div id="gallery" class="gallery">
+            <div class="loading">Chargement...</div>
+        </div>
+    </div>
+
+    <!-- Modal for downloading from printer -->
+    <div id="downloadModal" class="modal">
+        <div class="modal-content">
+            <h2>Timelapses disponibles</h2>
+            <div id="fileList" class="file-list"></div>
+            <button onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        function getBasePath() {
+            const path = window.location.pathname;
+            return path.endsWith('/') ? path : path + '/';
+        }
+
+        async function refreshGallery() {
+            const basePath = getBasePath();
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '<div class="loading">Chargement...</div>';
+
+            try {
+                const response = await fetch(basePath + 'api/timelapses');
+                const files = await response.json();
+
+                if (files.length === 0) {
+                    gallery.innerHTML = `
+                        <div class="empty">
+                            <div class="empty-icon">📹</div>
+                            <h2>Aucun timelapse</h2>
+                            <p>Téléchargez des timelapses depuis votre imprimante pour commencer</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                gallery.innerHTML = '';
+                files.forEach(file => {
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+
+                    const date = new Date(file.modified);
+                    const sizeInMB = (file.size / 1024 / 1024).toFixed(2);
+
+                    card.innerHTML = `
+                        <video controls>
+                            <source src="${basePath}video/${file.date}/${file.name}" type="video/mp4">
+                        </video>
+                        <div class="video-info">
+                            <div class="video-title">${file.name}</div>
+                            <div class="video-meta">
+                                📅 ${date.toLocaleDateString('fr-FR')}<br>
+                                💾 ${sizeInMB} MB
+                            </div>
+                            <div class="video-actions">
+                                <button class="btn-delete" onclick="deleteVideo('${file.name}')">🗑️ Supprimer</button>
+                            </div>
+                        </div>
+                    `;
+
+                    gallery.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                gallery.innerHTML = '<div class="loading">Erreur de chargement</div>';
+            }
+        }
+
+        async function showAvailableTimelapses() {
+            const basePath = getBasePath();
+            const modal = document.getElementById('downloadModal');
+            const fileList = document.getElementById('fileList');
+
+            fileList.innerHTML = '<div class="loading">Connexion à l\'imprimante...</div>';
+            modal.style.display = 'block';
+
+            try {
+                const response = await fetch(basePath + 'api/available');
+                const files = await response.json();
+
+                if (files.length === 0) {
+                    fileList.innerHTML = '<p>Aucun timelapse disponible sur l\'imprimante</p>';
+                    return;
+                }
+
+                fileList.innerHTML = '';
+                files.forEach(filename => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.textContent = filename;
+                    item.onclick = () => downloadFromPrinter(filename);
+                    fileList.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                fileList.innerHTML = '<p>Erreur de connexion à l\'imprimante</p>';
+            }
+        }
+
+        async function downloadFromPrinter(filename) {
+            const basePath = getBasePath();
+            if (!confirm(`Télécharger ${filename} ?`)) return;
+
+            closeModal();
+
+            try {
+                const formData = new FormData();
+                formData.append('filename', filename);
+
+                const response = await fetch(basePath + 'api/download', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Téléchargement réussi !');
+                    refreshGallery();
+                } else {
+                    alert('Erreur: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de téléchargement');
+            }
+        }
+
+        async function deleteVideo(filename) {
+            const basePath = getBasePath();
+            if (!confirm(`Supprimer ${filename} ?`)) return;
+
+            try {
+                const response = await fetch(basePath + `api/delete/${filename}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    refreshGallery();
+                } else {
+                    alert('Erreur de suppression');
+                }
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur de suppression');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('downloadModal').style.display = 'none';
+        }
+
+        // Load gallery on page load
+        refreshGallery();
+    </script>
+</body>
+
+</html>
