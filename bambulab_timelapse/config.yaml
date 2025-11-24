@@ -1,6 +1,6 @@
 name: "Bambulab Timelapse"
 description: "Télécharge et convertit automatiquement les timelapses de votre imprimante Bambu Lab P1S"
-version: "0.1.4"
+version: "0.2.0"
 slug: "bambulab_timelapse"
 url: "https://github.com/gubas/homeassistant-addons"
 init: false
@@ -24,16 +24,18 @@ boot: auto
 map:
   - share:rw
 options:
-  printer_ip: ""
-  printer_access_code: ""
+  bambu_email: ""
+  bambu_password: ""
+  bambu_region: "China"
   printer_serial: ""
   auto_download: true
   convert_to_mp4: true
   resolution: "original"
   notify_on_complete: true
 schema:
-  printer_ip: str
-  printer_access_code: str
+  bambu_email: str
+  bambu_password: password
+  bambu_region: list(China|Europe|USA)
   printer_serial: str
   auto_download: bool
   convert_to_mp4: bool

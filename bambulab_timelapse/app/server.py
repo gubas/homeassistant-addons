@@ -2,7 +2,7 @@
 Web server for Bambulab Timelapse add-on
 Provides UI for viewing and managing timelapses
 """
-print("[INFO] Démarrage server.py (version 0.1.4)", flush=True)
+print("[INFO] Démarrage server.py (version 0.2.0)", flush=True)
 
 from bottle import Bottle, request, response, static_file, template, run
 import os
@@ -12,9 +12,10 @@ from downloader import BambuTimelapseDownloader
 
 app = Bottle()
 
-# Configuration from Home Assistant
-PRINTER_IP = os.environ.get('PRINTER_IP', '')
-PRINTER_CODE = os.environ.get('PRINTER_ACCESS_CODE', '')
+# Configuration from environment or options.json
+BAMBU_EMAIL = os.environ.get('BAMBU_EMAIL', '')
+BAMBU_PASSWORD = os.environ.get('BAMBU_PASSWORD', '')
+BAMBU_REGION = os.environ.get('BAMBU_REGION', 'China')
 PRINTER_SERIAL = os.environ.get('PRINTER_SERIAL', '')
 AUTO_DOWNLOAD = os.environ.get('AUTO_DOWNLOAD', 'true').lower() == 'true'
 CONVERT_MP4 = os.environ.get('CONVERT_TO_MP4', 'true').lower() == 'true'
@@ -27,18 +28,19 @@ if OPTIONS_FILE.exists():
     try:
         with open(OPTIONS_FILE, 'r') as f:
             options = json.load(f)
-            PRINTER_IP = options.get('printer_ip', PRINTER_IP)
-            PRINTER_CODE = options.get('printer_access_code', PRINTER_CODE)
+            BAMBU_EMAIL = options.get('bambu_email', BAMBU_EMAIL)
+            BAMBU_PASSWORD = options.get('bambu_password', BAMBU_PASSWORD)
+            BAMBU_REGION = options.get('bambu_region', BAMBU_REGION)
             PRINTER_SERIAL = options.get('printer_serial', PRINTER_SERIAL)
             AUTO_DOWNLOAD = options.get('auto_download', AUTO_DOWNLOAD)
             CONVERT_MP4 = options.get('convert_to_mp4', CONVERT_MP4)
             RESOLUTION = options.get('resolution', RESOLUTION)
-            print(f"[CONFIG] Imprimante: {PRINTER_IP}", flush=True)
+            print(f"[CONFIG] Cloud: {BAMBU_EMAIL} / Région: {BAMBU_REGION} / Serial: {PRINTER_SERIAL}", flush=True)
     except Exception as e:
         print(f"[CONFIG] Erreur lecture options.json: {e}", flush=True)
 
 # Initialize downloader
-downloader = BambuTimelapseDownloader(PRINTER_IP, PRINTER_CODE, PRINTER_SERIAL, OUTPUT_DIR)
+downloader = BambuTimelapseDownloader(BAMBU_EMAIL, BAMBU_PASSWORD, BAMBU_REGION, PRINTER_SERIAL, OUTPUT_DIR)
 
 
 @app.route('/')

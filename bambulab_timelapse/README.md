@@ -22,8 +22,9 @@ Télécharge et convertit automatiquement les timelapses de votre imprimante Bam
 
 | Paramètre | Description |
 |-----------|-------------|
-| `printer_ip` | Adresse IP de votre imprimante |
-| `printer_access_code` | Code d'accès (paramètres réseau) |
+| `bambu_email` | Email de votre compte Bambu Lab |
+| `bambu_password` | Mot de passe Bambu Lab |
+| `bambu_region` | Région (China, Europe, USA) |
 | `printer_serial` | Numéro de série de l'imprimante |
 
 ### Paramètres optionnels
@@ -63,11 +64,16 @@ Les timelapses sont automatiquement disponibles dans :
 
 ## Troubleshooting
 
-### Impossible de se connecter à l'imprimante
+### Impossible de se connecter
 
-- Vérifiez que le **code d'accès** est correct (Paramètres → Réseau → Code d'accès)
-- Assurez-vous que l'imprimante est sur le même réseau
-- Testez la connexion FTP manuellement avec le port 990 (FTPS)
+- Vérifiez que vos **identifiants Bambu Cloud** sont corrects
+- Vérifiez la **région** (China pour les comptes `.cn`, Europe/USA pour les autres)
+- Assurez-vous que votre imprimante est connectée au cloud
+
+### Timelapses non trouvés
+
+- Vérifiez que l'imprimante est allumée et connectée au réseau
+- Assurez-vous que des timelapses ont été créés (fonction activée sur l'imprimante)
 
 ### Conversion échoue
 

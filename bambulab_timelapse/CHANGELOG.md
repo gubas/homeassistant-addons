@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 - Migration vers Cloud API
+
+- **BREAKING**: Changement de méthode d'authentification - utilise maintenant Bambu Cloud (email/password) au lieu de FTPS direct
+- **Feature**: Intégration de la bibliothèque `pybambu` pour une auth cloud fiable
+- **Feature**: Détection automatique de l'IP et du code d'accès via le cloud
+- **Fix**: Résout le problème de timeout FTPS qui nécessitait le mode "LAN Only"
+- **Config**: Nouvelles options : `bambu_email`, `bambu_password`, `bambu_region` (remplacent `printer_ip` et `printer_access_code`)
+
+> [!IMPORTANT]
+> **Migration** : Vous devez reconfigurer l'add-on avec vos identifiants Bambu Cloud au lieu de l'IP/code d'accès.
+
 ## 0.1.4
 
 - **Fix:** Ajout de `host_network: true` pour permettre l'accès direct au réseau local et résoudre le timeout FTPS.
