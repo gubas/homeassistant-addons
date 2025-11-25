@@ -286,4 +286,4 @@ if __name__ == '__main__':
     print(f"[INFO] Imprimante configurée: {PRINTER_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)
     print(f"[INFO] Seuil stock faible: {LOW_STOCK_THRESHOLD}g", flush=True)
-    run_app.run(host='0.0.0.0', port=5000, debug=False, server='wsgiref')
+    run_app.run(host='0.0.0.0', port=5001, debug=False, server='wsgiref')

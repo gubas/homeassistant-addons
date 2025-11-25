@@ -1,6 +1,6 @@
 name: "Filament Manager"
 description: "Gestionnaire de filaments 3D avec suivi de consommation et statistiques"
-version: "0.1.2"
+version: "0.1.3"
 slug: "filament_manager"
 url: "https://github.com/gubas/homeassistant-addons"
 init: false
@@ -12,15 +12,15 @@ arch:
   - i386
 homeassistant_api: true
 ingress: true
-ingress_port: 5000
+ingress_port: 5001
 panel_icon: mdi:printer-3d-nozzle
 panel_title: "Filament Manager"
 panel_admin: false
 ports:
-  5000/tcp: 5000
+  5001/tcp: 5001
 ports_description:
-  5000/tcp: "Interface web du gestionnaire de filaments"
-webui: "http://[HOST]:[PORT:5000]"
+  5001/tcp: "Interface web du gestionnaire de filaments"
+webui: "http://[HOST]:[PORT:5001]"
 startup: application
 boot: auto
 options:
