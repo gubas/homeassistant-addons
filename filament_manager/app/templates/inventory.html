@@ -10,7 +10,7 @@
     <div class="empty-icon">🎨</div>
     <h3>Aucun filament</h3>
     <p>Commencez par ajouter votre premier filament !</p>
-    <a href="{{ingress_path}}/add" class="btn-primary">➕ Ajouter un filament</a>
+    <a href="./add" class="btn-primary">➕ Ajouter un filament</a>
 </div>
 % else:
 <div class="filaments-grid">
@@ -53,7 +53,7 @@
         % end
 
         <div class="filament-actions">
-            <a href="{{ingress_path}}/edit/{{fil['id']}}" class="btn-secondary">✏️ Éditer</a>
+            <a href="./edit/{{fil['id']}}" class="btn-secondary">✏️ Éditer</a>
             <button onclick="consumeFilament({{fil['id']}}, '{{fil['name']}}')" class="btn-secondary">📉
                 Consommer</button>
             <button onclick="deleteFilament({{fil['id']}}, '{{fil['name']}}')" class="btn-danger">🗑️</button>
@@ -88,7 +88,6 @@
         </form>
     </div>
 </div>
-
 
 <% def get_color_code(color): """Retourne un code couleur CSS basé sur le nom""" colors={ 'Blanc' : '#ffffff' , 'Noir'
     : '#000000' , 'Gris' : '#808080' , 'Rouge' : '#e74c3c' , 'Bleu' : '#3498db' , 'Vert' : '#2ecc71' , 'Jaune'
