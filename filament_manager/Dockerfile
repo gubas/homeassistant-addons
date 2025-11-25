@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Copy et install en une seule couche pour réduire la taille
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt && \
+RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt && \
     rm -rf ~/.cache/pip
 
 # Copy application
