@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title or 'Filament Manager'}}</title>
-    <link rel="stylesheet" href="{{ingress_path}}/static/style.css">
+    <link rel="stylesheet" href="./static/style.css">
 </head>
 
 <body>
@@ -13,15 +13,13 @@
         <div class="nav-container">
             <h1 class="nav-title">🎨 Filament Manager</h1>
             <div class="nav-links">
-                <a href="{{ingress_path}}/inventory"
-                    class="nav-link {{'active' if active_page == 'inventory' else ''}}">
+                <a href="./inventory" class="nav-link {{'active' if active_page == 'inventory' else ''}}">
                     📦 Inventaire
                 </a>
-                <a href="{{ingress_path}}/statistics"
-                    class="nav-link {{'active' if active_page == 'statistics' else ''}}">
+                <a href="./statistics" class="nav-link {{'active' if active_page == 'statistics' else ''}}">
                     📊 Statistiques
                 </a>
-                <a href="{{ingress_path}}/add" class="nav-link btn-primary">
+                <a href="./add" class="nav-link btn-primary">
                     ➕ Ajouter
                 </a>
             </div>
@@ -32,7 +30,7 @@
         %include
     </main>
 
-    <script src="{{ingress_path}}/static/app.js"></script>
+    <script src="./static/app.js"></script>
 </body>
 
 </html>
