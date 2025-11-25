@@ -7,12 +7,15 @@ Gestionnaire de filaments 3D avec suivi de consommation
 import os
 import json
 import requests
-from bottle import Bottle, request, response, template, static_file, redirect
+from bottle import Bottle, request, response, template, static_file, redirect, TEMPLATE_PATH
 from datetime import datetime
 
 # Import des modules locaux
 import database as db
 import calculations as calc
+
+# Configuration du chemin des templates
+TEMPLATE_PATH.insert(0, '/app/templates')
 
 app = Bottle()
 
