@@ -90,9 +90,22 @@
 </div>
 
 
-<% def get_color_code(color): """Retourne un code couleur CSS basé sur le nom""" colors={ 'Blanc' : '#ffffff' , 'Noir'
-    : '#000000' , 'Gris' : '#808080' , 'Rouge' : '#e74c3c' , 'Bleu' : '#3498db' , 'Vert' : '#2ecc71' , 'Jaune'
-    : '#f1c40f' , 'Orange' : '#e67e22' , 'Violet' : '#9b59b6' , 'Rose' : '#ff69b4' , 'Marron' : '#8b4513'
-    , 'Transparent'
-    : 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, white 25%, white 75%, #ccc 75%, #ccc)'
-    } return colors.get(color, '#cccccc' ) %>
+<%
+def get_color_code(color):
+    """Retourne un code couleur CSS basé sur le nom"""
+    colors = {
+        'Blanc': '#ffffff',
+        'Noir': '#000000',
+        'Gris': '#808080',
+        'Rouge': '#e74c3c',
+        'Bleu': '#3498db',
+        'Vert': '#2ecc71',
+        'Jaune': '#f1c40f',
+        'Orange': '#e67e22',
+        'Violet': '#9b59b6',
+        'Rose': '#ff69b4',
+        'Marron': '#8b4513',
+        'Transparent': 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, white 25%, white 75%, #ccc 75%, #ccc)'
+    }
+    return colors.get(color, '#cccccc')
+%>

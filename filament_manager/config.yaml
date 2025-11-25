@@ -1,6 +1,6 @@
 name: "Filament Manager"
 description: "Gestionnaire de filaments 3D avec suivi de consommation et statistiques"
-version: "0.1.8"
+version: "0.1.9"
 slug: "filament_manager"
 url: "https://github.com/gubas/homeassistant-addons"
 init: false
