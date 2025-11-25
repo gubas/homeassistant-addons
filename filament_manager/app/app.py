@@ -83,10 +83,7 @@ ha_api = HomeAssistantAPI()
 @app.route('/index')
 def index():
     """Page principale - redirige vers l'inventaire"""
-    if INGRESS_PATH:
-        return redirect(f"{INGRESS_PATH}/inventory")
-    else:
-        return redirect('/inventory')
+    return redirect('/inventory')
 
 
 @app.route('/inventory')
@@ -108,7 +105,7 @@ def inventory():
     
     return template('inventory', 
                    filaments=filaments,
-                   ingress_path=INGRESS_PATH,
+                   ingress_path='',
                    currency=CURRENCY,
                    weight_unit=WEIGHT_UNIT)
 
@@ -120,7 +117,7 @@ def add_filament_page():
                    filament=None,
                    types=FILAMENT_TYPES,
                    colors=FILAMENT_COLORS,
-                   ingress_path=INGRESS_PATH,
+                   ingress_path='',
                    edit_mode=False)
 
 
@@ -135,7 +132,7 @@ def edit_filament_page(filament_id):
                    filament=filament,
                    types=FILAMENT_TYPES,
                    colors=FILAMENT_COLORS,
-                   ingress_path=INGRESS_PATH,
+                   ingress_path='',
                    edit_mode=True)
 
 
@@ -161,7 +158,7 @@ def statistics():
                    consumption_by_type=consumption_by_type,
                    low_stock=low_stock,
                    total_remaining=total_remaining,
-                   ingress_path=INGRESS_PATH,
+                   ingress_path='',
                    currency=CURRENCY,
                    weight_unit=WEIGHT_UNIT)
 
@@ -272,13 +269,8 @@ def serve_static(filepath):
     return static_file(filepath, root='/app/static')
 
 
-# Support Ingress - mount app sous le path ingress si défini
-if INGRESS_PATH:
-    main_app = Bottle()
-    main_app.mount(INGRESS_PATH, app)
-    run_app = main_app
-else:
-    run_app = app
+# Ingress est géré automatiquement par Home Assistant
+run_app = app
 
 
 if __name__ == '__main__':
