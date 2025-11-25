@@ -81,11 +81,6 @@ ha_api = HomeAssistantAPI()
 
 @app.route('/')
 @app.route('/index')
-def index():
-    """Page principale - redirige vers l'inventaire"""
-    return redirect('/inventory')
-
-
 @app.route('/inventory')
 def inventory():
     """Page d'inventaire des filaments"""
