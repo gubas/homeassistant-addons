@@ -1,0 +1,131 @@
+% rebase('base.html', title='Statistiques - Filament Manager', active_page='statistics', ingress_path=ingress_path)
+
+<div class="page-header">
+    <h2>📊 Statistiques</h2>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-content">
+            <div class="stat-label">Investissement total</div>
+            <div class="stat-value">{{f"{total_spent:.2f} {currency}"}}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">🖨️</div>
+        <div class="stat-content">
+            <div class="stat-label">Coût des impressions</div>
+            <div class="stat-value">{{f"{total_consumption_cost:.2f} {currency}"}}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-content">
+            <div class="stat-label">Stock total restant</div>
+            <div class="stat-value">{{f"{total_remaining:.0f} g"}}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-content">
+            <div class="stat-label">Stocks faibles</div>
+            <div class="stat-value">{{len(low_stock)}}</div>
+        </div>
+    </div>
+</div>
+
+% if consumption_by_type:
+<div class="section">
+    <h3>📈 Consommation par type de filament</h3>
+    <div class="chart-container">
+        % total_consumption = sum(consumption_by_type.values())
+        % for fil_type, weight in sorted(consumption_by_type.items(), key=lambda x: x[1], reverse=True):
+        <div class="chart-bar">
+            <div class="chart-label">{{fil_type}}</div>
+            <div class="chart-progress">
+                <div class="chart-fill"
+                    style="width: {{(weight/total_consumption*100) if total_consumption > 0 else 0}}%"></div>
+            </div>
+            <div class="chart-value">{{f"{weight:.0f} g"}}</div>
+        </div>
+        % end
+    </div>
+</div>
+% end
+
+% if low_stock:
+<div class="section">
+    <h3>⚠️ Filaments en stock faible</h3>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Couleur</th>
+                    <th>Stock restant</th>
+                    <th>%</th>
+                </tr>
+            </thead>
+            <tbody>
+                % for fil in low_stock:
+                % percentage = int((fil['current_weight'] / fil['initial_weight']) * 100) if fil['initial_weight'] > 0
+                else 0
+                <tr>
+                    <td><strong>{{fil['name']}}</strong></td>
+                    <td><span class="badge">{{fil['type']}}</span></td>
+                    <td>{{fil['color']}}</td>
+                    <td>{{f"{fil['current_weight']:.0f} g"}}</td>
+                    <td><span class="percentage-badge low">{{percentage}}%</span></td>
+                </tr>
+                % end
+            </tbody>
+        </table>
+    </div>
+</div>
+% end
+
+% if consumptions:
+<div class="section">
+    <h3>🕒 Dernières consommations</h3>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Impression</th>
+                    <th>Filament</th>
+                    <th>Quantité</th>
+                    <th>Coût</th>
+                </tr>
+            </thead>
+            <tbody>
+                % for cons in consumptions[:20]:
+                <tr>
+                    <td>{{cons['consumption_date'][:10]}}</td>
+                    <td>{{cons['print_name'] or '-'}}</td>
+                    <td>
+                        <span class="badge">{{cons['type']}}</span>
+                        {{cons['filament_name']}}
+                    </td>
+                    <td>{{f"{cons['weight_used']:.1f} g"}}</td>
+                    <td>{{f"{cons['cost']:.2f} {currency}"}}</td>
+                </tr>
+                % end
+            </tbody>
+        </table>
+    </div>
+</div>
+% end
+
+% if not consumptions and not low_stock and not consumption_by_type:
+<div class="empty-state">
+    <div class="empty-icon">📊</div>
+    <h3>Pas encore de données</h3>
+    <p>Les statistiques apparaîtront une fois que vous aurez enregistré des consommations.</p>
+</div>
+% end

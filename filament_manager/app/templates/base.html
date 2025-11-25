@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title or 'Filament Manager'}}</title>
+    <link rel="stylesheet" href="{{ingress_path}}/static/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="nav-title">🎨 Filament Manager</h1>
+            <div class="nav-links">
+                <a href="{{ingress_path}}/inventory"
+                    class="nav-link {{'active' if active_page == 'inventory' else ''}}">
+                    📦 Inventaire
+                </a>
+                <a href="{{ingress_path}}/statistics"
+                    class="nav-link {{'active' if active_page == 'statistics' else ''}}">
+                    📊 Statistiques
+                </a>
+                <a href="{{ingress_path}}/add" class="nav-link btn-primary">
+                    ➕ Ajouter
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        %include
+    </main>
+
+    <script src="{{ingress_path}}/static/app.js"></script>
+</body>
+
+</html>

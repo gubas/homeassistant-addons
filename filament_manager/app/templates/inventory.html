@@ -1,0 +1,97 @@
+% rebase('base.html', title='Inventaire - Filament Manager', active_page='inventory', ingress_path=ingress_path)
+
+<div class="page-header">
+    <h2>📦 Inventaire des Filaments</h2>
+    <p class="subtitle">{{len(filaments)}} bobine(s) en stock</p>
+</div>
+
+% if not filaments:
+<div class="empty-state">
+    <div class="empty-icon">🎨</div>
+    <h3>Aucun filament</h3>
+    <p>Commencez par ajouter votre premier filament !</p>
+    <a href="{{ingress_path}}/add" class="btn-primary">➕ Ajouter un filament</a>
+</div>
+% else:
+<div class="filaments-grid">
+    % for fil in filaments:
+    <div class="filament-card {{'low-stock' if fil['is_low_stock'] else ''}}">
+        <div class="filament-header">
+            <div class="filament-color" style="background-color: {{get_color_code(fil['color'])}}"></div>
+            <div class="filament-info">
+                <h3 class="filament-name">{{fil['name']}}</h3>
+                <span class="filament-type-badge">{{fil['type']}}</span>
+                <span class="filament-color-badge">{{fil['color']}}</span>
+            </div>
+        </div>
+
+        <div class="filament-stock">
+            <div class="stock-label">
+                <span>Stock restant</span>
+                <span class="stock-percentage">{{fil['percentage']}}%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{fil['percentage']}}%"></div>
+            </div>
+            <div class="stock-details">
+                <span>{{fil['formatted_current']}} / {{fil['formatted_initial']}}</span>
+            </div>
+            % if fil['is_low_stock']:
+            <div class="low-stock-warning">⚠️ Stock faible</div>
+            % end
+        </div>
+
+        <div class="filament-cost">
+            <span class="cost-label">Coût total:</span>
+            <span class="cost-value">{{fil['formatted_cost']}}</span>
+        </div>
+
+        % if fil.get('notes'):
+        <div class="filament-notes">
+            📝 {{fil['notes']}}
+        </div>
+        % end
+
+        <div class="filament-actions">
+            <a href="{{ingress_path}}/edit/{{fil['id']}}" class="btn-secondary">✏️ Éditer</a>
+            <button onclick="consumeFilament({{fil['id']}}, '{{fil['name']}}')" class="btn-secondary">📉
+                Consommer</button>
+            <button onclick="deleteFilament({{fil['id']}}, '{{fil['name']}}')" class="btn-danger">🗑️</button>
+        </div>
+    </div>
+    % end
+</div>
+% end
+
+<!-- Modal pour consommation -->
+<div id="consumeModal" class="modal">
+    <div class="modal-content">
+        <h3>📉 Enregistrer une consommation</h3>
+        <form id="consumeForm">
+            <input type="hidden" id="consumeFilamentId">
+            <div class="form-group">
+                <label>Filament:</label>
+                <input type="text" id="consumeFilamentName" readonly>
+            </div>
+            <div class="form-group">
+                <label for="consumeWeight">Poids utilisé ({{weight_unit}}):</label>
+                <input type="number" id="consumeWeight" min="0" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="consumePrintName">Nom de l'impression (optionnel):</label>
+                <input type="text" id="consumePrintName">
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn-primary">Enregistrer</button>
+                <button type="button" onclick="closeModal()" class="btn-secondary">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<% def get_color_code(color): """Retourne un code couleur CSS basé sur le nom""" colors={ 'Blanc' : '#ffffff' , 'Noir'
+    : '#000000' , 'Gris' : '#808080' , 'Rouge' : '#e74c3c' , 'Bleu' : '#3498db' , 'Vert' : '#2ecc71' , 'Jaune'
+    : '#f1c40f' , 'Orange' : '#e67e22' , 'Violet' : '#9b59b6' , 'Rose' : '#ff69b4' , 'Marron' : '#8b4513'
+    , 'Transparent'
+    : 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, white 25%, white 75%, #ccc 75%, #ccc)'
+    } return colors.get(color, '#cccccc' ) %>

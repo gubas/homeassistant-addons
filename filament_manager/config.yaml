@@ -1,0 +1,35 @@
+name: "Filament Manager"
+description: "Gestionnaire de filaments 3D avec suivi de consommation et statistiques"
+version: "0.1.0"
+slug: "filament_manager"
+url: "https://github.com/gubas/homeassistant-addons"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+homeassistant_api: true
+ingress: true
+ingress_port: 5000
+panel_icon: mdi:printer-3d-nozzle
+panel_title: "Filament Manager"
+panel_admin: false
+ports:
+  5000/tcp: 5000
+ports_description:
+  5000/tcp: "Interface web du gestionnaire de filaments"
+webui: "http://[HOST]:[PORT:5000]"
+startup: application
+boot: auto
+options:
+  printer_entity: "sensor.p1s_print_progress"
+  currency: "EUR"
+  weight_unit: "g"
+  low_stock_threshold: 200
+schema:
+  printer_entity: str
+  currency: str
+  weight_unit: str
+  low_stock_threshold: int
