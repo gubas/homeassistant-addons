@@ -73,8 +73,7 @@
             </thead>
             <tbody>
                 % for fil in low_stock:
-                % percentage = int((fil['current_weight'] / fil['initial_weight']) * 100) if fil['initial_weight'] > 0
-                else 0
+                % percentage = int((fil['current_weight'] / fil['initial_weight']) * 100) if fil['initial_weight'] > 0 else 0
                 <tr>
                     <td><strong>{{fil['name']}}</strong></td>
                     <td><span class="badge">{{fil['type']}}</span></td>
