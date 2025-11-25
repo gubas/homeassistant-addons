@@ -1,8 +1,5 @@
 /* Filament Manager - JavaScript */
 
-// Configuration de base
-const INGRESS_PATH = window.location.pathname.split('/').slice(0, -1).join('') || '';
-
 // ============ Form Handling ============
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -25,8 +22,9 @@ async function handleFilamentSubmit(e) {
     const data = Object.fromEntries(formData);
 
     // Déterminer si c'est un ajout ou une modification
-    const isEdit = form.action.includes('/api/filaments/');
+    // form.action est déjà une URL résolue par le navigateur
     const url = form.action;
+    const isEdit = url.includes('/api/filaments/');
     const method = isEdit ? 'PUT' : 'POST';
 
     try {
@@ -41,7 +39,12 @@ async function handleFilamentSubmit(e) {
         const result = await response.json();
 
         if (result.success) {
-            window.location.href = `${INGRESS_PATH}/inventory`;
+            // Redirection relative selon la page actuelle
+            if (window.location.pathname.includes('/edit/')) {
+                window.location.href = '../inventory';
+            } else {
+                window.location.href = './inventory';
+            }
         } else {
             alert('Erreur: ' + (result.error || 'Erreur inconnue'));
         }
@@ -75,7 +78,8 @@ async function handleConsumeSubmit(e) {
     }
 
     try {
-        const response = await fetch(`${INGRESS_PATH}/api/filaments/${filamentId}/consume`, {
+        // Utilisation de chemin relatif pour l'API
+        const response = await fetch(`./api/filaments/${filamentId}/consume`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -122,7 +126,8 @@ async function deleteFilament(id, name) {
     }
 
     try {
-        const response = await fetch(`${INGRESS_PATH}/api/filaments/${id}`, {
+        // Utilisation de chemin relatif pour l'API
+        const response = await fetch(`./api/filaments/${id}`, {
             method: 'DELETE'
         });
 
