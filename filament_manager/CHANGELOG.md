@@ -2,6 +2,20 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+
+## [0.4.0] - 2025-11-26
+
+### Ajouté
+- ⭐ **Automatisation de la consommation** : Décompte automatique du stock quand une impression se termine
+- 🤖 Monitoring en arrière-plan de l'imprimante via l'intégration Bambulab
+- 🎯 Sélection du filament actif avec badge visuel animé
+- 🔔 Notifications automatiques après déduction du stock
+- 📡 API endpoint pour définir le filament actif
+
+### Changé
+- 💾 Ajout de la colonne `is_active` à la base de données (migration automatique)
+- 🎨 Interface améliorée avec indicateur du filament actif
+
 ## [0.3.0] - 2025-11-26
 
 ### Changé

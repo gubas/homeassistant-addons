@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.3.0)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.0)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -9,6 +9,8 @@ import json
 import requests
 from bottle import Bottle, request, response, jinja2_template as template, static_file, redirect, TEMPLATE_PATH
 from datetime import datetime
+import threading
+import time
 
 # Import des modules locaux
 import database as db
@@ -29,6 +31,8 @@ PRINTER_ENTITY = os.getenv('PRINTER_ENTITY', 'sensor.p1s_print_progress')
 CURRENCY = os.getenv('CURRENCY', 'EUR')
 WEIGHT_UNIT = os.getenv('WEIGHT_UNIT', 'g')
 LOW_STOCK_THRESHOLD = float(os.getenv('LOW_STOCK_THRESHOLD', '200'))
+PRINTER_STATUS_ENTITY = os.getenv('PRINTER_STATUS_ENTITY', 'sensor.p1s_print_stage')
+PRINTER_WEIGHT_ENTITY = os.getenv('PRINTER_WEIGHT_ENTITY', 'sensor.p1s_print_weight')
 
 # Initialiser la base de données
 db.init_db()
@@ -99,6 +103,87 @@ class HomeAssistantAPI:
 
 
 ha_api = HomeAssistantAPI()
+
+
+class PrinterMonitor(threading.Thread):
+    """Thread de surveillance de l'imprimante"""
+    
+    def __init__(self):
+        super().__init__()
+        self.daemon = True
+        self.running = True
+        self.last_status = None
+        
+    def run(self):
+        print("[MONITOR] Démarrage du monitoring imprimante...", flush=True)
+        while self.running:
+            try:
+                self.check_printer()
+            except Exception as e:
+                print(f"[MONITOR] Erreur: {e}", flush=True)
+            time.sleep(30)  # Vérifier toutes les 30 secondes
+            
+    def check_printer(self):
+        # 1. Récupérer l'état
+        state_data = ha_api.get_state(PRINTER_STATUS_ENTITY)
+        if not state_data:
+            return
+            
+        current_status = state_data.get('state')
+        
+        # Détection de la fin d'impression (transition vers 'finish' ou 'success')
+        # Note: Adapter selon les états réels de l'intégration Bambulab
+        if current_status in ['finish', 'success'] and self.last_status not in ['finish', 'success', None]:
+            print(f"[MONITOR] Fin d'impression détectée (Status: {current_status})", flush=True)
+            self.handle_print_finished()
+            
+        self.last_status = current_status
+        
+    def handle_print_finished(self):
+        # 1. Récupérer le filament actif
+        active_filament = db.get_active_filament()
+        if not active_filament:
+            print("[MONITOR] Pas de filament actif sélectionné !", flush=True)
+            ha_api.send_notification(
+                "⚠️ Filament Manager",
+                "Impression terminée mais aucun filament n'est sélectionné comme actif. Impossible de décompter le stock."
+            )
+            return
+
+        # 2. Récupérer le poids consommé
+        weight_data = ha_api.get_state(PRINTER_WEIGHT_ENTITY)
+        if not weight_data:
+            print("[MONITOR] Impossible de lire le poids consommé", flush=True)
+            return
+            
+        try:
+            weight_used = float(weight_data.get('state', 0))
+        except ValueError:
+            print(f"[MONITOR] Valeur de poids invalide: {weight_data.get('state')}", flush=True)
+            return
+            
+        if weight_used <= 0:
+            print("[MONITOR] Poids consommé nul ou négatif, ignoré", flush=True)
+            return
+            
+        # 3. Décompter le stock
+        print(f"[MONITOR] Décompte de {weight_used}g sur le filament {active_filament['name']}", flush=True)
+        db.update_filament_weight(
+            filament_id=active_filament['id'],
+            weight_used=weight_used,
+            print_name="Impression automatique"
+        )
+        
+        # 4. Notification
+        ha_api.send_notification(
+            "Filament Manager",
+            f"Impression terminée. {weight_used}g déduits du stock de {active_filament['name']}."
+        )
+
+
+# Démarrer le monitoring
+monitor = PrinterMonitor()
+monitor.start()
 
 
 # ============ Routes Web ============
@@ -279,6 +364,15 @@ def api_consume_filament(filament_id):
     except Exception as e:
         response.status = 400
         return json.dumps({'success': False, 'error': str(e)})
+
+
+@app.route('/api/filaments/<filament_id:int>/set_active', method='POST')
+def api_set_active_filament(filament_id):
+    """API: Définit le filament actif"""
+    response.content_type = 'application/json'
+    
+    success = db.set_active_filament(filament_id)
+    return json.dumps({'success': success})
 
 
 # ============ Static Files ============

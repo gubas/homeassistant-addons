@@ -35,9 +35,17 @@ def init_db():
             cost REAL NOT NULL,
             purchase_date TEXT NOT NULL,
             notes TEXT,
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT 0
         )
     ''')
+    
+    # Migration: Ajouter la colonne is_active si elle n'existe pas (pour les bases existantes)
+    try:
+        cursor.execute('SELECT is_active FROM filaments LIMIT 1')
+    except sqlite3.OperationalError:
+        print("[DB] Migration: Ajout de la colonne is_active", flush=True)
+        cursor.execute('ALTER TABLE filaments ADD COLUMN is_active BOOLEAN DEFAULT 0')
     
     # Table des consommations
     cursor.execute('''
@@ -87,7 +95,30 @@ def add_filament(name: str, filament_type: str, color: str,
     conn.close()
     
     print(f"[DB] Filament ajouté: {name} (ID: {filament_id})", flush=True)
+    print(f"[DB] Filament ajouté: {name} (ID: {filament_id})", flush=True)
     return filament_id
+
+
+def set_active_filament(filament_id: int) -> bool:
+    """Définit un filament comme étant celui actif (utilisé par l'imprimante)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # 1. Désactiver tous les filaments
+        cursor.execute('UPDATE filaments SET is_active = 0')
+        
+        # 2. Activer le filament choisi
+        cursor.execute('UPDATE filaments SET is_active = 1 WHERE id = ?', (filament_id,))
+        
+        success = cursor.rowcount > 0
+        conn.commit()
+        return success
+    except Exception as e:
+        print(f"[DB] Erreur set_active_filament: {e}", flush=True)
+        return False
+    finally:
+        conn.close()
 
 
 def get_all_filaments() -> List[Dict]:
@@ -108,6 +139,18 @@ def get_filament(filament_id: int) -> Optional[Dict]:
     cursor = conn.cursor()
     
     cursor.execute('SELECT * FROM filaments WHERE id = ?', (filament_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    return dict(row) if row else None
+
+
+def get_active_filament() -> Optional[Dict]:
+    """Récupère le filament actuellement actif"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM filaments WHERE is_active = 1 LIMIT 1')
     row = cursor.fetchone()
     conn.close()
     

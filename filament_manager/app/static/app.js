@@ -143,6 +143,30 @@ async function deleteFilament(id, name) {
     }
 }
 
+// ============ Activation Filament ============
+
+async function setActiveFilament(id, name) {
+    if (!confirm(`Définir "${name}" comme filament actif ?\n\nL'impression automatique décomptera le stock de ce filament.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`./api/filaments/${id}/set_active`, {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'activation');
+        }
+    } catch (error) {
+        alert('Erreur de communication: ' + error.message);
+    }
+}
+
 // ============ Utilitaires ============
 
 // Fermer les modals avec la touche Escape

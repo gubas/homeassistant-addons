@@ -21,7 +21,12 @@
         <div class="filament-header">
             <div class="filament-color" style="background-color: {{ get_color_code(fil['color']) }}"></div>
             <div class="filament-info">
-                <h3 class="filament-name">{{ fil['name'] }}</h3>
+                <h3 class="filament-name">
+                    {{ fil['name'] }}
+                    {% if fil.get('is_active') %}
+                    <span class="active-badge" title="Filament actuellement utilisé par l'imprimante">⭐ ACTIF</span>
+                    {% endif %}
+                </h3>
                 <span class="filament-type-badge">{{ fil['type'] }}</span>
                 <span class="filament-color-badge">{{ fil['color'] }}</span>
             </div>
@@ -55,6 +60,10 @@
         {% endif %}
 
         <div class="filament-actions">
+            {% if not fil.get('is_active') %}
+            <button onclick="setActiveFilament({{ fil['id'] }}, '{{ fil['name'] }}')" class="btn-primary btn-sm">⭐
+                Activer</button>
+            {% endif %}
             <a href="./edit/{{ fil['id'] }}" class="btn-secondary">✏️ Éditer</a>
             <button onclick="consumeFilament({{ fil['id'] }}, '{{ fil['name'] }}')" class="btn-secondary">📉
                 Consommer</button>
