@@ -3,6 +3,14 @@
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
 
+
+## [0.4.1] - 2025-11-26
+
+### Changé
+- 🔧 Configuration complète des entités d'imprimante (`printer_status_entity`, `printer_weight_entity`)
+- 🔧 Port configurable via les options de l'add-on
+- 📝 Suppression de l'ancienne variable `printer_entity` obsolète
+
 ## [0.4.0] - 2025-11-26
 
 ### Ajouté

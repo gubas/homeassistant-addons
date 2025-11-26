@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.0)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.1)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -27,12 +27,12 @@ app = Bottle()
 SUPERVISOR_TOKEN = os.getenv('SUPERVISOR_TOKEN', '')
 HA_URL = os.getenv('HA_URL', 'http://supervisor/core')
 INGRESS_PATH = os.getenv('INGRESS_PATH', '')
-PRINTER_ENTITY = os.getenv('PRINTER_ENTITY', 'sensor.p1s_print_progress')
+PRINTER_STATUS_ENTITY = os.getenv('PRINTER_STATUS_ENTITY', 'sensor.p1s_stage')
+PRINTER_WEIGHT_ENTITY = os.getenv('PRINTER_WEIGHT_ENTITY', 'sensor.p1s_print_weight')
 CURRENCY = os.getenv('CURRENCY', 'EUR')
 WEIGHT_UNIT = os.getenv('WEIGHT_UNIT', 'g')
 LOW_STOCK_THRESHOLD = float(os.getenv('LOW_STOCK_THRESHOLD', '200'))
-PRINTER_STATUS_ENTITY = os.getenv('PRINTER_STATUS_ENTITY', 'sensor.p1s_print_stage')
-PRINTER_WEIGHT_ENTITY = os.getenv('PRINTER_WEIGHT_ENTITY', 'sensor.p1s_print_weight')
+PORT = int(os.getenv('PORT', '5001'))
 
 # Initialiser la base de données
 db.init_db()
@@ -388,8 +388,10 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.3.0", flush=True)
-    print(f"[INFO] Imprimante configurée: {PRINTER_ENTITY}", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.4.1", flush=True)
+    print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
+    print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)
     print(f"[INFO] Seuil stock faible: {LOW_STOCK_THRESHOLD}g", flush=True)
-    run_app.run(host='0.0.0.0', port=5001, debug=False, server='wsgiref')
+    print(f"[INFO] Port: {PORT}", flush=True)
+    run_app.run(host='0.0.0.0', port=PORT, debug=False, server='wsgiref')
