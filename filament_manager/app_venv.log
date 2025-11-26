@@ -1,0 +1,8 @@
+[DEBUG] Démarrage app.py (version 0.1.0)
+Traceback (most recent call last):
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/app/app.py", line 10, in <module>
+    from bottle import Bottle, request, response, jinja2_template as template, static_file, redirect, TEMPLATE_PATH
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/venv/lib/python3.13/site-packages/bottle.py", line 38, in <module>
+    import base64, cgi, email.utils, functools, hmac, itertools, mimetypes,\
+            os, re, subprocess, sys, tempfile, threading, time, warnings, hashlib
+ModuleNotFoundError: No module named 'cgi'

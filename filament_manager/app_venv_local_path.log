@@ -1,0 +1,37 @@
+[DEBUG] Démarrage app.py (version 0.1.0)
+[DB] Base de données initialisée
+[INFO] Démarrage Filament Manager v0.1.0
+[INFO] Imprimante configurée: sensor.p1s_print_progress
+[INFO] Devise: EUR, Unité: g
+[INFO] Seuil stock faible: 200.0g
+Bottle v0.12.25 server starting up (using WSGIRefServer())...
+Listening on http://0.0.0.0:5001/
+Hit Ctrl-C to quit.
+
+Traceback (most recent call last):
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/app/app.py", line 300, in <module>
+    run_app.run(host='0.0.0.0', port=5001, debug=False, server='wsgiref')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/venv/lib/python3.13/site-packages/bottle.py", line 767, in run
+    run(self, **kwargs)
+    ~~~^^^^^^^^^^^^^^^^
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/venv/lib/python3.13/site-packages/bottle.py", line 3175, in run
+    server.run(app)
+    ~~~~~~~~~~^^^^^
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/venv/lib/python3.13/site-packages/bottle.py", line 2801, in run
+    srv = make_server(self.host, self.port, app, server_cls, handler_cls)
+  File "/usr/lib/python3.13/wsgiref/simple_server.py", line 150, in make_server
+    server = server_class((host, port), handler_class)
+  File "/usr/lib/python3.13/socketserver.py", line 457, in __init__
+    self.server_bind()
+    ~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.13/wsgiref/simple_server.py", line 50, in server_bind
+    HTTPServer.server_bind(self)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.13/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 98] Address already in use

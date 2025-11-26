@@ -2,6 +2,13 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [0.3.0] - 2025-11-26
+
+### Changé
+- ♻️ Migration du moteur de template vers Jinja2 pour plus de stabilité
+- 🔧 Correction des erreurs de syntaxe dans les templates HTML
+- 🐛 Ajout de `legacy-cgi` pour compatibilité Python 3.13+
+
 ## [0.1.0] - 2025-11-25
 
 ### Ajouté

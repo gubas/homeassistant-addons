@@ -1,4 +1,6 @@
-% rebase('base.html', title='Statistiques - Filament Manager', active_page='statistics')
+{% extends "base.html" %}
+
+{% block content %}
 
 <div class="page-header">
     <h2>📊 Statistiques</h2>
@@ -9,7 +11,7 @@
         <div class="stat-icon">💰</div>
         <div class="stat-content">
             <div class="stat-label">Investissement total</div>
-            <div class="stat-value">{{f"{total_spent:.2f} {currency}"}}</div>
+            <div class="stat-value">{{ "%.2f"|format(total_spent) }} {{ currency }}</div>
         </div>
     </div>
 
@@ -17,7 +19,7 @@
         <div class="stat-icon">🖨️</div>
         <div class="stat-content">
             <div class="stat-label">Coût des impressions</div>
-            <div class="stat-value">{{f"{total_consumption_cost:.2f} {currency}"}}</div>
+            <div class="stat-value">{{ "%.2f"|format(total_consumption_cost) }} {{ currency }}</div>
         </div>
     </div>
 
@@ -25,7 +27,7 @@
         <div class="stat-icon">📦</div>
         <div class="stat-content">
             <div class="stat-label">Stock total restant</div>
-            <div class="stat-value">{{f"{total_remaining:.0f} g"}}</div>
+            <div class="stat-value">{{ "%.0f"|format(total_remaining) }} g</div>
         </div>
     </div>
 
@@ -33,31 +35,31 @@
         <div class="stat-icon">⚠️</div>
         <div class="stat-content">
             <div class="stat-label">Stocks faibles</div>
-            <div class="stat-value">{{len(low_stock)}}</div>
+            <div class="stat-value">{{ low_stock|length }}</div>
         </div>
     </div>
 </div>
 
-% if consumption_by_type:
+{% if consumption_by_type %}
 <div class="section">
     <h3>📈 Consommation par type de filament</h3>
     <div class="chart-container">
-        % total_consumption = sum(consumption_by_type.values())
-        % for fil_type, weight in sorted(consumption_by_type.items(), key=lambda x: x[1], reverse=True):
+        {% set total_consumption = consumption_by_type.values()|sum %}
+        {% for fil_type, weight in consumption_by_type.items()|sort(attribute=1, reverse=True) %}
         <div class="chart-bar">
-            <div class="chart-label">{{fil_type}}</div>
+            <div class="chart-label">{{ fil_type }}</div>
             <div class="chart-progress">
                 <div class="chart-fill"
-                    style="width: {{(weight/total_consumption*100) if total_consumption > 0 else 0}}%"></div>
+                    style="width: {{ (weight / total_consumption * 100) if total_consumption > 0 else 0 }}%"></div>
             </div>
-            <div class="chart-value">{{f"{weight:.0f} g"}}</div>
+            <div class="chart-value">{{ "%.0f"|format(weight) }} g</div>
         </div>
-        % end
+        {% endfor %}
     </div>
 </div>
-% end
+{% endif %}
 
-% if low_stock:
+{% if low_stock %}
 <div class="section">
     <h3>⚠️ Filaments en stock faible</h3>
     <div class="table-container">
@@ -72,23 +74,24 @@
                 </tr>
             </thead>
             <tbody>
-                % for fil in low_stock:
-                % percentage = int((fil['current_weight'] / fil['initial_weight']) * 100) if fil['initial_weight'] > 0 else 0
+                {% for fil in low_stock %}
+                {% set percentage = ((fil['current_weight'] / fil['initial_weight']) * 100)|int if fil['initial_weight']
+                > 0 else 0 %}
                 <tr>
-                    <td><strong>{{fil['name']}}</strong></td>
-                    <td><span class="badge">{{fil['type']}}</span></td>
-                    <td>{{fil['color']}}</td>
-                    <td>{{f"{fil['current_weight']:.0f} g"}}</td>
-                    <td><span class="percentage-badge low">{{percentage}}%</span></td>
+                    <td><strong>{{ fil['name'] }}</strong></td>
+                    <td><span class="badge">{{ fil['type'] }}</span></td>
+                    <td>{{ fil['color'] }}</td>
+                    <td>{{ "%.0f"|format(fil['current_weight']) }} g</td>
+                    <td><span class="percentage-badge low">{{ percentage }}%</span></td>
                 </tr>
-                % end
+                {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-% end
+{% endif %}
 
-% if consumptions:
+{% if consumptions %}
 <div class="section">
     <h3>🕒 Dernières consommations</h3>
     <div class="table-container">
@@ -103,28 +106,30 @@
                 </tr>
             </thead>
             <tbody>
-                % for cons in consumptions[:20]:
+                {% for cons in consumptions[:20] %}
                 <tr>
-                    <td>{{cons['consumption_date'][:10]}}</td>
-                    <td>{{cons['print_name'] or '-'}}</td>
+                    <td>{{ cons['consumption_date'][:10] }}</td>
+                    <td>{{ cons['print_name'] or '-' }}</td>
                     <td>
-                        <span class="badge">{{cons['type']}}</span>
-                        {{cons['filament_name']}}
+                        <span class="badge">{{ cons['type'] }}</span>
+                        {{ cons['filament_name'] }}
                     </td>
-                    <td>{{f"{cons['weight_used']:.1f} g"}}</td>
-                    <td>{{f"{cons['cost']:.2f} {currency}"}}</td>
+                    <td>{{ "%.1f"|format(cons['weight_used']) }} g</td>
+                    <td>{{ "%.2f"|format(cons['cost']) }} {{ currency }}</td>
                 </tr>
-                % end
+                {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-% end
+{% endif %}
 
-% if not consumptions and not low_stock and not consumption_by_type:
+{% if not consumptions and not low_stock and not consumption_by_type %}
 <div class="empty-state">
     <div class="empty-icon">📊</div>
     <h3>Pas encore de données</h3>
     <p>Les statistiques apparaîtront une fois que vous aurez enregistré des consommations.</p>
 </div>
-% end
+{% endif %}
+
+{% endblock %}

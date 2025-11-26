@@ -1,0 +1,10 @@
+[DEBUG] Démarrage app.py (version 0.1.0)
+Traceback (most recent call last):
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/app/app.py", line 32, in <module>
+    db.init_db()
+    ~~~~~~~~~~^^
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/app/database.py", line 23, in init_db
+    conn = get_db()
+  File "/home/guillaume@flace.lan/Documents/dev/ha/ha_addons_repo/filament_manager/app/database.py", line 16, in get_db
+    conn = sqlite3.connect(DB_PATH)
+sqlite3.OperationalError: unable to open database file

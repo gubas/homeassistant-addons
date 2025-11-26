@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.1.0)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.3.0)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -7,7 +7,7 @@ Gestionnaire de filaments 3D avec suivi de consommation
 import os
 import json
 import requests
-from bottle import Bottle, request, response, template, static_file, redirect, TEMPLATE_PATH
+from bottle import Bottle, request, response, jinja2_template as template, static_file, redirect, TEMPLATE_PATH
 from datetime import datetime
 
 # Import des modules locaux
@@ -15,7 +15,9 @@ import database as db
 import calculations as calc
 
 # Configuration du chemin des templates
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_PATH.insert(0, '/app/templates')
+TEMPLATE_PATH.insert(0, os.path.join(BASE_DIR, 'templates'))
 
 app = Bottle()
 
@@ -37,6 +39,25 @@ FILAMENT_COLORS = [
     'Blanc', 'Noir', 'Gris', 'Rouge', 'Bleu', 'Vert', 
     'Jaune', 'Orange', 'Violet', 'Rose', 'Marron', 'Transparent'
 ]
+
+
+def get_color_code(color):
+    """Retourne un code couleur CSS basé sur le nom"""
+    colors = {
+        'Blanc': '#ffffff',
+        'Noir': '#000000',
+        'Gris': '#808080',
+        'Rouge': '#e74c3c',
+        'Bleu': '#3498db',
+        'Vert': '#2ecc71',
+        'Jaune': '#f1c40f',
+        'Orange': '#e67e22',
+        'Violet': '#9b59b6',
+        'Rose': '#ff69b4',
+        'Marron': '#8b4513',
+        'Transparent': 'linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, white 25%, white 75%, #ccc 75%, #ccc)'
+    }
+    return colors.get(color, '#cccccc')
 
 
 class HomeAssistantAPI:
@@ -105,7 +126,8 @@ def inventory():
                    filaments=filaments,
                    ingress_path='',
                    currency=CURRENCY,
-                   weight_unit=WEIGHT_UNIT)
+                   weight_unit=WEIGHT_UNIT,
+                   get_color_code=get_color_code)
 
 
 @app.route('/add')
@@ -272,7 +294,7 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.1.0", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.3.0", flush=True)
     print(f"[INFO] Imprimante configurée: {PRINTER_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)
     print(f"[INFO] Seuil stock faible: {LOW_STOCK_THRESHOLD}g", flush=True)

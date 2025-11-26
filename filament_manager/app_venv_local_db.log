@@ -1,0 +1,14 @@
+[DEBUG] Démarrage app.py (version 0.1.0)
+[DB] Base de données initialisée
+[INFO] Démarrage Filament Manager v0.1.0
+[INFO] Imprimante configurée: sensor.p1s_print_progress
+[INFO] Devise: EUR, Unité: g
+[INFO] Seuil stock faible: 200.0g
+Bottle v0.12.25 server starting up (using WSGIRefServer())...
+Listening on http://0.0.0.0:5001/
+Hit Ctrl-C to quit.
+
+127.0.0.1 - - [26/Nov/2025 20:53:53] "GET / HTTP/1.1" 500 761
+127.0.0.1 - - [26/Nov/2025 20:53:54] "GET /statistics HTTP/1.1" 500 772
+127.0.0.1 - - [26/Nov/2025 20:54:19] "GET / HTTP/1.1" 500 761
+127.0.0.1 - - [26/Nov/2025 20:54:20] "GET /statistics HTTP/1.1" 500 772
