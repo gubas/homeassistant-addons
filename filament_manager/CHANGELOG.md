@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 
 
+## 0.4.4
+
+- ✨ Amélioration : Support automatique des formats de noms AMS (ex: `ams_1_emplacement_1`)
+
 ## 0.4.3
 
 - 🐛 Fix : Correction du crash au démarrage (variable PORT manquante)
