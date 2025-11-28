@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 
 
+## 0.4.7
+
+- ✨ Amélioration : Affichage de tous les slots AMS même vides (pour bobines non-Bambulab)
+
 ## 0.4.6
 
 - 🔍 Debug : Ajout de logs au niveau de la route API

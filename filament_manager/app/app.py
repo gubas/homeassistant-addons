@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.6)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.7)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -133,8 +133,8 @@ class HomeAssistantAPI:
                         print(f"[DEBUG] Match found: {pattern} = {state.get('state')}", flush=True)
                         break
             
-            if state and state.get('state') not in ['Empty', 'None']:
-                # On a trouvé un slot occupé
+            # Afficher tous les slots trouvés, même vides (pour bobines non-Bambulab)
+            if state:
                 attrs = state.get('attributes', {})
                 
                 # Récupérer la couleur (souvent en hex sans #)
@@ -142,10 +142,17 @@ class HomeAssistantAPI:
                 if color_hex and not color_hex.startswith('#'):
                     color_hex = f"#{color_hex}"
                 
+                # Si vide, mettre une couleur grise par défaut
+                slot_name = state.get('state')
+                if slot_name in ['Empty', 'None', '']:
+                    slot_name = f"Slot {i} (Vide)"
+                    if not color_hex:
+                        color_hex = "#cccccc"
+                
                 ams_slots.append({
                     'id': i,
                     'entity_id': entity_id,
-                    'name': state.get('state'), 
+                    'name': slot_name, 
                     'type': attrs.get('tray_type', attrs.get('type', 'Unknown')),
                     'color': color_hex,
                     'remaining': attrs.get('tray_remain', attrs.get('remain', 0))
@@ -454,7 +461,7 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.4.6", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.4.7", flush=True)
     print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
     print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)
