@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.4)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.5)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -104,6 +104,7 @@ class HomeAssistantAPI:
 
     def get_ams_info(self):
         """Récupère les informations des slots AMS"""
+        print(f"[DEBUG] Scanning AMS with prefix: '{AMS_TRAY_PREFIX}'", flush=True)
         ams_slots = []
         # Essayer de scanner jusqu'à 16 slots (4 AMS * 4 slots)
         for i in range(1, 17):
@@ -122,11 +123,15 @@ class HomeAssistantAPI:
             entity_id = None
             
             for pattern in patterns:
+                # print(f"[DEBUG] Testing pattern: {pattern}", flush=True)
                 s = self.get_state(pattern)
-                if s and s.get('state') not in ['unknown', 'unavailable', 'None']:
-                    state = s
-                    entity_id = pattern
-                    break
+                if s:
+                    # print(f"[DEBUG] Found state for {pattern}: {s.get('state')}", flush=True)
+                    if s.get('state') not in ['unknown', 'unavailable', 'None']:
+                        state = s
+                        entity_id = pattern
+                        print(f"[DEBUG] Match found: {pattern} = {state.get('state')}", flush=True)
+                        break
             
             if state and state.get('state') not in ['Empty', 'None']:
                 # On a trouvé un slot occupé
@@ -145,6 +150,8 @@ class HomeAssistantAPI:
                     'color': color_hex,
                     'remaining': attrs.get('tray_remain', attrs.get('remain', 0))
                 })
+        
+        print(f"[DEBUG] AMS Scan result: {len(ams_slots)} slots found", flush=True)
         return ams_slots
 
 
@@ -446,7 +453,7 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.4.4", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.4.5", flush=True)
     print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
     print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)

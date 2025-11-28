@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 
 
+## 0.4.5
+
+- 🔍 Debug : Ajout de logs détaillés pour le scan AMS
+
 ## 0.4.4
 
 - ✨ Amélioration : Support automatique des formats de noms AMS (ex: `ams_1_emplacement_1`)
