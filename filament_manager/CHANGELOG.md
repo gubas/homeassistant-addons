@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 
 
+## 0.4.3
+
+- 🐛 Fix : Correction du crash au démarrage (variable PORT manquante)
+
 ## 0.4.2
 
 - ✨ Ajout du support AMS : Visualisation des slots et activation rapide

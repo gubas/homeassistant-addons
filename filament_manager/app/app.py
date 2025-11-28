@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.2)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.3)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -427,7 +427,7 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.4.2", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.4.3", flush=True)
     print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
     print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)
