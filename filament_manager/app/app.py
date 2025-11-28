@@ -32,6 +32,7 @@ PRINTER_WEIGHT_ENTITY = os.getenv('PRINTER_WEIGHT_ENTITY', 'sensor.p1s_print_wei
 CURRENCY = os.getenv('CURRENCY', 'EUR')
 WEIGHT_UNIT = os.getenv('WEIGHT_UNIT', 'g')
 LOW_STOCK_THRESHOLD = float(os.getenv('LOW_STOCK_THRESHOLD', '200'))
+PORT = int(os.getenv('PORT', '5001'))
 AMS_TRAY_PREFIX = os.getenv('AMS_TRAY_PREFIX', 'sensor.p1s_tray_')
 
 # Initialiser la base de données
