@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.5)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.6)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -431,6 +431,7 @@ def api_set_active_filament(filament_id):
 @app.route('/api/ams/scan', method='GET')
 def api_scan_ams():
     """API: Scanne les slots AMS"""
+    print("[DEBUG] Route /api/ams/scan called", flush=True)
     response.content_type = 'application/json'
     
     try:
@@ -453,7 +454,7 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.4.5", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.4.6", flush=True)
     print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
     print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)

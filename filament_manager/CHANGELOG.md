@@ -4,6 +4,10 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 
 
+## 0.4.6
+
+- 🔍 Debug : Ajout de logs au niveau de la route API
+
 ## 0.4.5
 
 - 🔍 Debug : Ajout de logs détaillés pour le scan AMS
