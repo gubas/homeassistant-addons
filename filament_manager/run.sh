@@ -7,12 +7,14 @@ export CURRENCY=$(bashio::config 'currency')
 export WEIGHT_UNIT=$(bashio::config 'weight_unit')
 export LOW_STOCK_THRESHOLD=$(bashio::config 'low_stock_threshold')
 export PORT=$(bashio::config 'port')
+export AMS_TRAY_PREFIX=$(bashio::config 'ams_tray_prefix')
 export SUPERVISOR_TOKEN="${SUPERVISOR_TOKEN}"
 export HA_URL="http://supervisor/core"
 
 bashio::log.info "Démarrage du Filament Manager..."
 bashio::log.info "Statut imprimante: ${PRINTER_STATUS_ENTITY}"
 bashio::log.info "Poids imprimante: ${PRINTER_WEIGHT_ENTITY}"
+bashio::log.info "Prefix AMS: ${AMS_TRAY_PREFIX}"
 bashio::log.info "Devise: ${CURRENCY}"
 bashio::log.info "Port: ${PORT}"
 

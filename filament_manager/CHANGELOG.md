@@ -4,6 +4,12 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 
 
 
+## 0.4.2
+
+- ✨ Ajout du support AMS : Visualisation des slots et activation rapide
+- 🐛 Fix : Suppression et activation impossibles si le nom contient des guillemets
+- 🔧 Config : Ajout de l'option `ams_tray_prefix`
+
 ## [0.4.1] - 2025-11-26
 
 ### Changé

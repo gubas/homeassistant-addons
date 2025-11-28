@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.1)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.4.2)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -32,7 +32,7 @@ PRINTER_WEIGHT_ENTITY = os.getenv('PRINTER_WEIGHT_ENTITY', 'sensor.p1s_print_wei
 CURRENCY = os.getenv('CURRENCY', 'EUR')
 WEIGHT_UNIT = os.getenv('WEIGHT_UNIT', 'g')
 LOW_STOCK_THRESHOLD = float(os.getenv('LOW_STOCK_THRESHOLD', '200'))
-PORT = int(os.getenv('PORT', '5001'))
+AMS_TRAY_PREFIX = os.getenv('AMS_TRAY_PREFIX', 'sensor.p1s_tray_')
 
 # Initialiser la base de données
 db.init_db()
@@ -81,7 +81,7 @@ class HomeAssistantAPI:
             if resp.status_code == 200:
                 return resp.json()
             else:
-                print(f"[HA API] Erreur get_state: {resp.status_code}", flush=True)
+                # print(f"[HA API] Erreur get_state: {resp.status_code} pour {entity_id}", flush=True)
                 return None
         except Exception as e:
             print(f"[HA API] Exception get_state: {e}", flush=True)
@@ -100,6 +100,32 @@ class HomeAssistantAPI:
         except Exception as e:
             print(f"[HA API] Exception notification: {e}", flush=True)
             return False
+
+    def get_ams_info(self):
+        """Récupère les informations des slots AMS"""
+        ams_slots = []
+        # Essayer de scanner jusqu'à 16 slots (4 AMS * 4 slots)
+        for i in range(1, 17):
+            entity_id = f"{AMS_TRAY_PREFIX}{i}"
+            state = self.get_state(entity_id)
+            if state and state.get('state') not in ['unknown', 'unavailable', 'Empty', 'None']:
+                # On a trouvé un slot occupé
+                attrs = state.get('attributes', {})
+                
+                # Récupérer la couleur (souvent en hex sans #)
+                color_hex = attrs.get('tray_color', attrs.get('color', ''))
+                if color_hex and not color_hex.startswith('#'):
+                    color_hex = f"#{color_hex}"
+                
+                ams_slots.append({
+                    'id': i,
+                    'entity_id': entity_id,
+                    'name': state.get('state'), 
+                    'type': attrs.get('tray_type', attrs.get('type', 'Unknown')),
+                    'color': color_hex,
+                    'remaining': attrs.get('tray_remain', attrs.get('remain', 0))
+                })
+        return ams_slots
 
 
 ha_api = HomeAssistantAPI()
@@ -375,6 +401,18 @@ def api_set_active_filament(filament_id):
     return json.dumps({'success': success})
 
 
+@app.route('/api/ams/scan', method='GET')
+def api_scan_ams():
+    """API: Scanne les slots AMS"""
+    response.content_type = 'application/json'
+    
+    try:
+        slots = ha_api.get_ams_info()
+        return json.dumps({'success': True, 'slots': slots})
+    except Exception as e:
+        return json.dumps({'success': False, 'error': str(e)})
+
+
 # ============ Static Files ============
 
 @app.route('/static/<filepath:path>')
@@ -388,7 +426,7 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.4.1", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.4.2", flush=True)
     print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
     print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)

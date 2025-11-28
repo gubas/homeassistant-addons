@@ -61,13 +61,13 @@
 
         <div class="filament-actions">
             {% if not fil.get('is_active') %}
-            <button onclick="setActiveFilament({{ fil['id'] }}, '{{ fil['name'] }}')" class="btn-primary btn-sm">⭐
+            <button onclick="setActiveFilament({{ fil['id'] }}, this)" class="btn-primary btn-sm">⭐
                 Activer</button>
             {% endif %}
             <a href="./edit/{{ fil['id'] }}" class="btn-secondary">✏️ Éditer</a>
             <button onclick="consumeFilament({{ fil['id'] }}, '{{ fil['name'] }}')" class="btn-secondary">📉
                 Consommer</button>
-            <button onclick="deleteFilament({{ fil['id'] }}, '{{ fil['name'] }}')" class="btn-danger">🗑️</button>
+            <button onclick="deleteFilament({{ fil['id'] }}, this)" class="btn-danger">🗑️</button>
         </div>
     </div>
     {% endfor %}
@@ -97,6 +97,25 @@
                 <button type="button" onclick="closeModal()" class="btn-secondary">Annuler</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Modal pour AMS -->
+<div id="amsModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3>📡 Status AMS</h3>
+            <button onclick="closeModal()" class="close-btn">&times;</button>
+        </div>
+        <div id="amsLoading" class="text-center">
+            <p>Scanning AMS...</p>
+        </div>
+        <div id="amsList" class="ams-grid">
+            <!-- Rempli par JS -->
+        </div>
+        <div class="modal-actions">
+            <button type="button" onclick="closeModal()" class="btn-secondary">Fermer</button>
+        </div>
     </div>
 </div>
 

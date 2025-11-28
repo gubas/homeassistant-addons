@@ -104,23 +104,117 @@ async function handleConsumeSubmit(e) {
 }
 
 function closeModal() {
-    const modal = document.getElementById('consumeModal');
-    if (modal) {
+    document.querySelectorAll('.modal').forEach(modal => {
         modal.classList.remove('active');
-    }
+    });
 }
 
 // Fermer le modal en cliquant en dehors
 window.addEventListener('click', function (e) {
-    const modal = document.getElementById('consumeModal');
-    if (e.target === modal) {
+    if (e.target.classList.contains('modal')) {
         closeModal();
     }
 });
 
+// ============ AMS ============
+
+async function scanAMS() {
+    const modal = document.getElementById('amsModal');
+    const list = document.getElementById('amsList');
+    const loading = document.getElementById('amsLoading');
+
+    modal.classList.add('active');
+    loading.style.display = 'block';
+    list.innerHTML = '';
+
+    try {
+        // Fetch AMS and Inventory in parallel
+        const [amsRes, invRes] = await Promise.all([
+            fetch('./api/ams/scan'),
+            fetch('./api/filaments')
+        ]);
+
+        const amsData = await amsRes.json();
+        const filaments = await invRes.json();
+
+        loading.style.display = 'none';
+
+        if (!amsData.success) {
+            list.innerHTML = `<div class="error">Erreur AMS: ${amsData.error}</div>`;
+            return;
+        }
+
+        if (amsData.slots.length === 0) {
+            list.innerHTML = '<div class="empty-state"><p>Aucun filament détecté dans l\'AMS</p></div>';
+            return;
+        }
+
+        amsData.slots.forEach(slot => {
+            const div = document.createElement('div');
+            div.className = 'ams-slot-card';
+
+            // Build options for dropdown
+            let options = '<option value="">-- Associer à l\'inventaire --</option>';
+            filaments.forEach(fil => {
+                options += `<option value="${fil.id}">${fil.name} (${fil.type}, ${fil.color})</option>`;
+            });
+
+            div.innerHTML = `
+                <div class="slot-header">
+                    <span class="slot-id">Slot ${slot.id}</span>
+                    <span class="slot-type">${slot.type}</span>
+                </div>
+                <div class="slot-color" style="background-color: ${slot.color}"></div>
+                <div class="slot-name" title="${slot.name}">${slot.name}</div>
+                <div class="slot-actions">
+                    <select id="ams-select-${slot.id}" class="ams-select">
+                        ${options}
+                    </select>
+                    <button onclick="activateFromAMS(${slot.id})" class="btn-primary btn-sm">Activer</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+
+    } catch (error) {
+        loading.style.display = 'none';
+        list.innerHTML = `<div class="error">Erreur de communication: ${error.message}</div>`;
+    }
+}
+
+async function activateFromAMS(slotId) {
+    const select = document.getElementById(`ams-select-${slotId}`);
+    const filamentId = select.value;
+
+    if (!filamentId) {
+        alert('Veuillez sélectionner un filament de l\'inventaire à associer.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`./api/filaments/${filamentId}/set_active`, {
+            method: 'POST'
+        });
+        const result = await response.json();
+        if (result.success) {
+            location.reload();
+        } else {
+            alert('Erreur: ' + result.error);
+        }
+    } catch (e) {
+        alert('Erreur: ' + e.message);
+    }
+}
+
 // ============ Suppression ============
 
-async function deleteFilament(id, name) {
+// ============ Suppression ============
+
+async function deleteFilament(id, btn) {
+    const card = btn.closest('.filament-card');
+    // Récupérer le nom et nettoyer le badge "ACTIF" si présent
+    let name = card.querySelector('.filament-name').childNodes[0].textContent.trim();
+
     if (!confirm(`Êtes-vous sûr de vouloir supprimer le filament "${name}" ?\n\nCette action est irréversible.`)) {
         return;
     }
@@ -145,7 +239,11 @@ async function deleteFilament(id, name) {
 
 // ============ Activation Filament ============
 
-async function setActiveFilament(id, name) {
+async function setActiveFilament(id, btn) {
+    const card = btn.closest('.filament-card');
+    // Récupérer le nom et nettoyer le badge "ACTIF" si présent
+    let name = card.querySelector('.filament-name').childNodes[0].textContent.trim();
+
     if (!confirm(`Définir "${name}" comme filament actif ?\n\nL'impression automatique décomptera le stock de ce filament.`)) {
         return;
     }
