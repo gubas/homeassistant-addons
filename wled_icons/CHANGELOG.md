@@ -1,7 +1,9 @@
 # Changelog
-## [0.9.0] - 2025-12-07
+## [0.9.1] - 2025-12-07
 
-### Améliorations UX
+### Corrections
+- 🐛 **Fix Sélecteurs YAML** : Correction de la syntaxe YAML des sélecteurs (utilisation de dictionnaires explicites `{}`) pour garantir leur affichage dans Home Assistant.
+
 - ✨ **Sélecteurs UI Home Assistant** : L'intégration utilise maintenant des sélecteurs natifs (sliders, dropdowns, toggles) au lieu de champs texte bruts.
   - Luminosité via Slider
   - Rotation via Menu Déroulant

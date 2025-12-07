@@ -16,7 +16,7 @@ Queue d'impression 3D familiale - Interface simple pour gérer les demandes d'im
 
 [Documentation complète](./3d_print_queue/README.md)
 
-### 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v0.9.0-blue)
+### 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v0.9.1-blue)
 
 Générateur d'icônes personnalisées pour WLED - Transformez vos textes et icônes en presets WLED.
 
