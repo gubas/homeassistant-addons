@@ -4,6 +4,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 
+from homeassistant.helpers import selector
+
 DOMAIN = "wled_icons"
 DATA_HOST = "host"
 DATA_ADDON_URL = "addon_url"
@@ -30,8 +32,16 @@ class WledIconsConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
         
         schema = vol.Schema({
-            vol.Optional(DATA_HOST): str,
-            vol.Optional(DATA_ADDON_URL, default="http://localhost:8234"): str
+            vol.Optional(DATA_HOST): selector.TextSelector(
+                selector.TextSelectorConfig(
+                    type=selector.TextSelectorType.TEXT
+                )
+            ),
+            vol.Optional(DATA_ADDON_URL, default="http://localhost:8234"): selector.TextSelector(
+                selector.TextSelectorConfig(
+                    type=selector.TextSelectorType.URL
+                )
+            )
         })
         return self.async_show_form(
             step_id="user", 

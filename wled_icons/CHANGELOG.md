@@ -1,4 +1,13 @@
 # Changelog
+## [1.0.0] - 2025-12-07
+
+### 🎉 Release Majeure
+
+#### Intégration Native
+- ⚙️ **Configuration UI Robuste** : Utilisation de `TextSelector` pour garantir que les champs (Host, URL) sont réellement optionnels et mieux présentés.
+- 🔄 **Mise à Jour Intelligente** : L'intégration vérifie maintenant sa version au démarrage.
+- 🔔 **Notifications de Mise à Jour** : Si une mise à jour de l'intégration est détectée, une **notification persistante** est envoyée à Home Assistant pour vous inviter à redémarrer.
+
 ## [0.9.2] - 2025-12-07
 
 ### Améliorations UX
