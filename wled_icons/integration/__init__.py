@@ -60,6 +60,11 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
         brightness: int = call.data.get("brightness", 255)
         addon_url: str = call.data.get("addon_url", addon_default or "http://localhost:8234")
         
+        # Debug logging
+        _LOGGER.debug("Service call data: %s", call.data)
+        _LOGGER.debug("Parsed: animate=%s (type=%s), loop=%s (type=%s)", 
+                      animate, type(animate).__name__, loop, type(loop).__name__)
+        
         if not host or not icon_id:
             _LOGGER.error("host et icon_id requis")
             return
@@ -69,12 +74,12 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
             payload: dict[str, Any] = {
                 "host": host,
                 "icon_id": icon_id,
-                "rotate": rotate,
-                "flip_h": flip_h,
-                "flip_v": flip_v,
-                "animate": animate,
-                "loop": loop,
-                "brightness": brightness
+                "rotate": int(rotate) if rotate else 0,
+                "flip_h": bool(flip_h),
+                "flip_v": bool(flip_v),
+                "animate": bool(animate),
+                "loop": int(loop) if loop is not None else 1,
+                "brightness": int(brightness) if brightness else 255
             }
             if color:
                 payload["color"] = color
