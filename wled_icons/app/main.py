@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.4")
+app = FastAPI(title="WLED Icons Service", version="1.0.8")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -162,6 +162,7 @@ def show_icon(req: IconRequest):
     global current_animation_thread
     
     print(f"[SHOW_ICON] Received request for icon_id: {req.icon_id}")
+    print(f"[SHOW_ICON] animate={req.animate}, loop={req.loop}, fps={req.fps}, brightness={req.brightness}")
     
     sequence: List[tuple[List[List[int]], float]] = []
     
