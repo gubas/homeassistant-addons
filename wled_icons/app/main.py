@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.9")
+app = FastAPI(title="WLED Icons Service", version="1.0.10")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -122,6 +122,22 @@ def send_frame(host: str, colors: List[List[int]], brightness: int = 255):
     except requests.exceptions.RequestException as e:
         print(f"[SEND_FRAME] Request exception: {e}")
         raise HTTPException(status_code=502, detail=f"Connection error: {str(e)}")
+
+
+def restore_wled_control(host: str):
+    """Release WLED segment control by setting effect 0 (Solid) - allows normal WLED commands to work again."""
+    print(f"[RESTORE] Releasing segment control on {host}")
+    url = f"http://{host}/json/state"
+    # Setting fx=0 (Solid effect) releases individual LED control
+    payload = {"seg": [{"id": 0, "fx": 0, "col": [[0, 0, 0]]}], "on": True}
+    try:
+        r = requests.post(url, json=payload, timeout=5)
+        if r.ok:
+            print(f"[RESTORE] WLED control released successfully")
+        else:
+            print(f"[RESTORE] Failed to release control: {r.status_code} {r.text}")
+    except Exception as e:
+        print(f"[RESTORE] Error releasing control: {e}")
 
 
 # rasterize_svg removed - SVG endpoint deprecated
@@ -665,5 +681,6 @@ def background_animation_loop(host: str, sequence: List[tuple[List[List[int]], f
     except Exception as e:
         print(f"[ANIMATION] Thread crashed: {e}")
     finally:
-        print("[ANIMATION] Thread exiting")
+        print("[ANIMATION] Thread exiting, restoring WLED control...")
+        restore_wled_control(host)
 

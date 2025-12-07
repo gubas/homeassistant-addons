@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.10] - 2025-12-07
+
+### Corrections
+- 🔓 **Restauration WLED** : La matrix n'est plus bloquée après l'arrêt d'une animation (duration/loop). Les commandes WLED natives fonctionnent à nouveau immédiatement.
+
 ## [1.0.9] - 2025-12-07
 
 ### Nouvelles Fonctionnalités
