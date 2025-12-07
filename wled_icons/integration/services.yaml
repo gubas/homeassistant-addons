@@ -1,19 +1,101 @@
 display:
   name: Display Icon
-  description: Affiche une icône sur WLED
+  description: "Affiche une icone sur WLED"
   fields:
     icon_id:
       name: Icon ID
-      description: ID de l'icône
+      description: "ID de icone LaMetric"
+      selector:
+        text:
+
+    host:
+      name: WLED Host
+      description: "Adresse IP ou host WLED"
+      selector:
+        text:
+
+    color:
+      name: Recolor
+      description: "Couleur hex pour recolorisation"
+      selector:
+        text:
+
+    rotate:
+      name: Rotation
+      description: "Rotation en degres (0, 90, 180, 270)"
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 270
+          step: 90
+
+    flip_h:
+      name: Miroir Horizontal
+      description: "Retourner horizontalement"
+      default: false
+      selector:
+        boolean:
+
+    flip_v:
+      name: Miroir Vertical
+      description: "Retourner verticalement"
+      default: false
+      selector:
+        boolean:
+
+    animate:
+      name: Animate
+      description: "Activer animation pour les GIFs"
+      default: true
+      selector:
+        boolean:
+
+    fps:
+      name: FPS
+      description: "Force le FPS de animation"
+      selector:
+        number:
+          min: 1
+          max: 60
+
+    loop:
+      name: Loops
+      description: "Nombre de boucles (-1 pour infini)"
+      default: 1
+      selector:
+        number:
+          min: -1
+          max: 100
+
+    brightness:
+      name: Brightness
+      description: "Luminosite (0-255)"
+      default: 200
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: slider
+
+    addon_url:
+      name: Add-on URL
+      description: "URL du add-on (optionnel)"
       selector:
         text:
 
 stop:
-  name: Stop
-  description: Arrête l'animation
+  name: Stop Animation
+  description: "Arrete animation en cours sur WLED"
   fields:
     host:
-      name: Host
-      description: IP WLED
+      name: WLED Host
+      description: "Adresse IP ou host WLED"
+      selector:
+        text:
+
+    addon_url:
+      name: Add-on URL
+      description: "URL du add-on"
       selector:
         text:
