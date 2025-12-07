@@ -102,7 +102,7 @@ L'add-on envoie des notifications Home Assistant :
 ## 🛠️ Support
 
 - **Issues** : [GitHub Issues](https://github.com/gubas/homeassistant-addons/issues)
-- **Discussions** : [GitHub Discussions](https://github.com/gubas/homeassistant-addons/discussions)
+- **Discussions** : [Community Forum](https://community.home-assistant.io/)
 
 ## 📝 Changelog
 

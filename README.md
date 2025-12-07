@@ -4,6 +4,12 @@ Repository d'add-ons Home Assistant personnalisés.
 
 ## Add-ons disponibles
 
+### 🧵 Filament Manager
+
+Gestionnaire de filaments 3D complet - Suivi de stock, calcul de coûts et intégration Bambu Lab.
+
+[Documentation complète](./filament_manager/README.md)
+
 ### 🖨️ 3D Print Queue
 
 Queue d'impression 3D familiale - Interface simple pour gérer les demandes d'impression via MakerWorld.
@@ -14,7 +20,7 @@ Queue d'impression 3D familiale - Interface simple pour gérer les demandes d'im
 
 Générateur d'icônes personnalisées pour WLED - Transformez vos textes et icônes en presets WLED.
 
-[Documentation complète](./wled_icons/CHANGELOG.md)
+[Documentation complète](./wled_icons/README.md)
 
 ## Installation
 
