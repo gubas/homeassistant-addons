@@ -1,4 +1,11 @@
 # Changelog
+## [1.0.3] - 2025-12-07
+
+### Corrections
+- 🔧 **Sélecteurs UI** : Refonte complète de `services.yaml` pour corriger l'affichage des sélecteurs dans les automations.
+  - Suppression du champ `required: true` obsolète.
+  - Standardisation de la syntaxe YAML (valeurs null explicites).
+
 ## [1.0.2] - 2025-12-07
 
 ### Corrections

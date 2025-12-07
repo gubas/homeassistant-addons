@@ -5,21 +5,20 @@ display:
     icon_id:
       name: Icon ID
       description: ID de l'icône LaMetric (ex: 1486, 2867)
-      required: true
       selector:
-        text: {}
+        text:
 
     host:
       name: WLED Host
       description: Adresse IP/host WLED (optionnel si configuré dans l'intégration)
       selector:
-        text: {}
+        text:
 
     color:
       name: Recolor
       description: Couleur hex optionnelle pour recolorisation (ex: #FF0000)
       selector:
-        color_rgb: {}
+        color_rgb:
 
     rotate:
       name: Rotation
@@ -42,21 +41,21 @@ display:
       description: Retourner horizontalement
       default: false
       selector:
-        boolean: {}
+        boolean:
 
     flip_v:
       name: Miroir Vertical
       description: Retourner verticalement
       default: false
       selector:
-        boolean: {}
+        boolean:
 
     animate:
       name: Animate
       description: Activer l'animation pour les GIFs
       default: true
       selector:
-        boolean: {}
+        boolean:
 
     fps:
       name: FPS (Override)
@@ -90,7 +89,7 @@ display:
       name: Add-on URL
       description: URL de l'add-on (optionnel)
       selector:
-        text: {}
+        text:
 
 stop:
   name: Stop Animation
@@ -100,9 +99,9 @@ stop:
       name: WLED Host
       description: Adresse IP/host WLED (optionnel si configuré)
       selector:
-        text: {}
+        text:
     addon_url:
       name: Add-on URL
       description: URL de l'add-on (optionnel)
       selector:
-        text: {}
+        text:
