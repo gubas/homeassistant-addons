@@ -36,7 +36,8 @@ def init_db():
             purchase_date TEXT NOT NULL,
             notes TEXT,
             created_at TEXT NOT NULL,
-            is_active BOOLEAN DEFAULT 0
+            is_active BOOLEAN DEFAULT 0,
+            ams_slot TEXT
         )
     ''')
     
@@ -47,6 +48,13 @@ def init_db():
         print("[DB] Migration: Ajout de la colonne is_active", flush=True)
         cursor.execute('ALTER TABLE filaments ADD COLUMN is_active BOOLEAN DEFAULT 0')
     
+    # Migration: Ajouter la colonne ams_slot si elle n'existe pas
+    try:
+        cursor.execute('SELECT ams_slot FROM filaments LIMIT 1')
+    except sqlite3.OperationalError:
+        print("[DB] Migration: Ajout de la colonne ams_slot", flush=True)
+        cursor.execute('ALTER TABLE filaments ADD COLUMN ams_slot TEXT')
+    
     # Table des consommations
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS consumptions (
@@ -56,9 +64,17 @@ def init_db():
             weight_used REAL NOT NULL,
             cost REAL NOT NULL,
             consumption_date TEXT NOT NULL,
+            print_id TEXT,
             FOREIGN KEY (filament_id) REFERENCES filaments (id) ON DELETE CASCADE
         )
     ''')
+    
+    # Migration: Ajouter la colonne print_id si elle n'existe pas
+    try:
+        cursor.execute('SELECT print_id FROM consumptions LIMIT 1')
+    except sqlite3.OperationalError:
+        print("[DB] Migration: Ajout de la colonne print_id", flush=True)
+        cursor.execute('ALTER TABLE consumptions ADD COLUMN print_id TEXT')
     
     # Table des paramètres
     cursor.execute('''
@@ -159,7 +175,7 @@ def get_active_filament() -> Optional[Dict]:
 
 def update_filament(filament_id: int, name: str, filament_type: str, 
                    color: str, initial_weight: float, current_weight: float,
-                   cost: float, notes: str = "") -> bool:
+                   cost: float, notes: str = "", ams_slot: str = None) -> bool:
     """Met à jour un filament existant"""
     conn = get_db()
     cursor = conn.cursor()
@@ -167,9 +183,9 @@ def update_filament(filament_id: int, name: str, filament_type: str,
     cursor.execute('''
         UPDATE filaments 
         SET name = ?, type = ?, color = ?, initial_weight = ?, 
-            current_weight = ?, cost = ?, notes = ?
+            current_weight = ?, cost = ?, notes = ?, ams_slot = ?
         WHERE id = ?
-    ''', (name, filament_type, color, initial_weight, current_weight, cost, notes, filament_id))
+    ''', (name, filament_type, color, initial_weight, current_weight, cost, notes, ams_slot, filament_id))
     
     success = cursor.rowcount > 0
     conn.commit()
@@ -325,3 +341,96 @@ def get_low_stock_filaments(threshold: float) -> List[Dict]:
     conn.close()
     
     return [dict(row) for row in rows]
+
+
+# ============ AMS Slot Mapping ============
+
+def map_filament_to_ams_slot(filament_id: int, ams_slot: str) -> bool:
+    """
+    Associe un filament à un emplacement AMS
+    Format du slot: "1-1" pour AMS 1 Slot 1, "2-3" pour AMS 2 Slot 3, etc.
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            'UPDATE filaments SET ams_slot = ? WHERE id = ?',
+            (ams_slot, filament_id)
+        )
+        success = cursor.rowcount > 0
+        conn.commit()
+        print(f"[DB] Filament {filament_id} mappé au slot AMS {ams_slot}", flush=True)
+        return success
+    except Exception as e:
+        print(f"[DB] Erreur map_filament_to_ams_slot: {e}", flush=True)
+        return False
+    finally:
+        conn.close()
+
+
+def get_filament_by_ams_slot(ams_slot: str) -> Optional[Dict]:
+    """
+    Récupère le filament assigné à un emplacement AMS donné
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM filaments WHERE ams_slot = ? LIMIT 1', (ams_slot,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    return dict(row) if row else None
+
+
+def record_multi_consumption(print_id: str, consumptions: List[Tuple[int, float, str]]) -> bool:
+    """
+    Enregistre plusieurs consommations pour une même impression (multi-couleur)
+    
+    Args:
+        print_id: Identifiant unique de l'impression
+        consumptions: Liste de tuples (filament_id, weight_used, print_name)
+    
+    Returns:
+        True si succès, False sinon
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        consumption_date = datetime.now().isoformat()
+        
+        for filament_id, weight_used, print_name in consumptions:
+            # Récupérer le filament
+            filament = get_filament(filament_id)
+            if not filament:
+                print(f"[DB] Filament {filament_id} introuvable, skip", flush=True)
+                continue
+            
+            # Calculer le coût
+            cost_per_gram = filament['cost'] / filament['initial_weight']
+            consumption_cost = weight_used * cost_per_gram
+            
+            # Mettre à jour le poids restant
+            new_weight = max(0, filament['current_weight'] - weight_used)
+            cursor.execute(
+                'UPDATE filaments SET current_weight = ? WHERE id = ?',
+                (new_weight, filament_id)
+            )
+            
+            # Enregistrer la consommation
+            cursor.execute('''
+                INSERT INTO consumptions (filament_id, print_name, weight_used, cost, consumption_date, print_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (filament_id, print_name, weight_used, consumption_cost, consumption_date, print_id))
+            
+            print(f"[DB] Consommation enregistrée: {weight_used}g de {filament['name']} (print_id: {print_id})", flush=True)
+        
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"[DB] Erreur record_multi_consumption: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()

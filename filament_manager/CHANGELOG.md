@@ -2,6 +2,20 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## 0.5.0
+
+- 🎨 **Nouvelle fonctionnalité majeure** : Support des impressions multi-couleurs
+  - Mapping des filaments vers les emplacements AMS physiques
+  - Détection automatique des plateaux utilisés dans une impression
+  - Déduction de la consommation pour chaque filament utilisé
+  - Notifications détaillées pour les impressions multi-couleurs
+- 📊 Base de données : Ajout de la colonne `ams_slot` dans la table `filaments`
+- 📊 Base de données : Ajout de la colonne `print_id` dans la table `consumptions` pour grouper les consommations multi-couleurs
+- 🔧 Configuration : Nouveau paramètre `printer_weight_detail_entity` pour le capteur de poids détaillé
+- 🎨 Interface : Champ de sélection d'emplacement AMS dans le formulaire d'ajout/édition
+- 🎨 Interface : Affichage de l'emplacement AMS assigné dans l'inventaire
+- 🔄 Compatibilité : Fallback vers l'ancien système "filament actif" pour les impressions mono-couleur
+
 
 
 ## 0.4.7

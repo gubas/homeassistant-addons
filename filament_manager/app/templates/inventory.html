@@ -53,17 +53,18 @@
             <span class="cost-value">{{ fil['formatted_cost'] }}</span>
         </div>
 
-        {% if fil.get('notes') %}
+        {% if fil.get('notes') or fil.get('ams_slot') %}
         <div class="filament-notes">
+            {% if fil.get('ams_slot') %}
+            📍 <strong>AMS {{ fil['ams_slot'].split('-')[0] }} - Slot {{ fil['ams_slot'].split('-')[1] }}</strong><br>
+            {% endif %}
+            {% if fil.get('notes') %}
             📝 {{ fil['notes'] }}
+            {% endif %}
         </div>
         {% endif %}
 
         <div class="filament-actions">
-            {% if not fil.get('is_active') %}
-            <button onclick="setActiveFilament({{ fil['id'] }}, this)" class="btn-primary btn-sm">⭐
-                Activer</button>
-            {% endif %}
             <a href="./edit/{{ fil['id'] }}" class="btn-secondary">✏️ Éditer</a>
             <button onclick="consumeFilament({{ fil['id'] }}, '{{ fil['name'] }}')" class="btn-secondary">📉
                 Consommer</button>

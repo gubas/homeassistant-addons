@@ -1,4 +1,4 @@
-print("[DEBUG] Démarrage app.py (version 0.4.7)", flush=True)
+print("[DEBUG] Démarrage app.py (version 0.5.0)", flush=True)
 """
 Filament Manager - Application Bottle
 Gestionnaire de filaments 3D avec suivi de consommation
@@ -7,6 +7,7 @@ Gestionnaire de filaments 3D avec suivi de consommation
 import os
 import json
 import requests
+import uuid
 from bottle import Bottle, request, response, jinja2_template as template, static_file, redirect, TEMPLATE_PATH
 from datetime import datetime
 import threading
@@ -29,6 +30,7 @@ HA_URL = os.getenv('HA_URL', 'http://supervisor/core')
 INGRESS_PATH = os.getenv('INGRESS_PATH', '')
 PRINTER_STATUS_ENTITY = os.getenv('PRINTER_STATUS_ENTITY', 'sensor.p1s_stage')
 PRINTER_WEIGHT_ENTITY = os.getenv('PRINTER_WEIGHT_ENTITY', 'sensor.p1s_print_weight')
+PRINTER_WEIGHT_DETAIL_ENTITY = os.getenv('PRINTER_WEIGHT_DETAIL_ENTITY', '')
 CURRENCY = os.getenv('CURRENCY', 'EUR')
 WEIGHT_UNIT = os.getenv('WEIGHT_UNIT', 'g')
 LOW_STOCK_THRESHOLD = float(os.getenv('LOW_STOCK_THRESHOLD', '200'))
@@ -198,8 +200,116 @@ class PrinterMonitor(threading.Thread):
             self.handle_print_finished()
             
         self.last_status = current_status
+    
+    def parse_tray_usage_from_sensor(self, weight_data):
+        """
+        Parse les attributs du capteur de poids pour extraire l'utilisation par plateau AMS
+        Retourne un dict: {"1-4": 40.2, "1-2": 15.3, ...}
+        """
+        if not weight_data:
+            return {}
+        
+        attrs = weight_data.get('attributes', {})
+        tray_usage = {}
+        
+        # Parser chaque attribut qui correspond à "AMS X Tray Y: Z.Z"
+        for key, value in attrs.items():
+            # Exemples: "AMS 1 Tray 4", "AMS 2 Tray 1"
+            if isinstance(key, str) and key.startswith('AMS ') and 'Tray' in key:
+                try:
+                    # Extraire les numéros AMS et Tray
+                    parts = key.split()
+                    if len(parts) >= 4:  # ["AMS", "1", "Tray", "4"]
+                        ams_num = parts[1]
+                        tray_num = parts[3]
+                        slot_key = f"{ams_num}-{tray_num}"
+                        weight = float(value)
+                        
+                        if weight > 0:
+                            tray_usage[slot_key] = weight
+                            print(f"[MONITOR] Parsed: AMS {ams_num} Tray {tray_num} = {weight}g", flush=True)
+                except (ValueError, IndexError) as e:
+                    print(f"[MONITOR] Erreur parsing {key}: {e}", flush=True)
+        
+        return tray_usage
         
     def handle_print_finished(self):
+        """
+        Gère la fin d'une impression en enregistrant la consommation de tous les filaments utilisés
+        """
+        print("[MONITOR] Traitement fin d'impression...", flush=True)
+        
+        # Utiliser le capteur détaillé si configuré, sinon fallback sur le capteur simple
+        weight_entity = PRINTER_WEIGHT_DETAIL_ENTITY if PRINTER_WEIGHT_DETAIL_ENTITY else PRINTER_WEIGHT_ENTITY
+        weight_data = ha_api.get_state(weight_entity)
+        
+        if not weight_data:
+            print("[MONITOR] Impossible de lire le poids consommé", flush=True)
+            return
+        
+        # Parser l'utilisation par plateau (multi-couleur)
+        tray_usage = self.parse_tray_usage_from_sensor(weight_data)
+        
+        if not tray_usage:
+            # Fallback: impression mono-couleur (ancienne méthode)
+            print("[MONITOR] Aucune donnée multi-couleur trouvée, utilisation du mode mono-couleur", flush=True)
+            self.handle_single_color_print(weight_data)
+            return
+        
+        # Multi-couleur: enregistrer une consommation par plateau
+        print(f"[MONITOR] Impression multi-couleur détectée: {len(tray_usage)} plateaux utilisés", flush=True)
+        
+        consumptions = []
+        total_weight = 0
+        
+        for slot, weight in tray_usage.items():
+            filament = db.get_filament_by_ams_slot(slot)
+            
+            if not filament:
+                print(f"[MONITOR] ⚠️ Aucun filament mappé au slot {slot}, consommation ignorée", flush=True)
+                ha_api.send_notification(
+                    "⚠️ Filament Manager",
+                    f"Impression terminée mais aucun filament n'est assigné au slot AMS {slot}. {weight}g non comptabilisés."
+                )
+                continue
+            
+            consumptions.append((filament['id'], weight, "Impression automatique"))
+            total_weight += weight
+            print(f"[MONITOR] Plateau {slot}: {weight}g de {filament['name']}", flush=True)
+        
+        if not consumptions:
+            print("[MONITOR] Aucune consommation à enregistrer", flush=True)
+            return
+        
+        # Générer un ID unique pour cette impression
+        print_id = str(uuid.uuid4())
+        
+        # Enregistrer toutes les consommations
+        success = db.record_multi_consumption(print_id, consumptions)
+        
+        if success:
+            # Créer un message de notification
+            if len(consumptions) == 1:
+                msg = f"Impression terminée. {total_weight:.1f}g déduits du stock de {consumptions[0][2]}."
+            else:
+                filament_names = [f"{c[1]:.1f}g de {db.get_filament(c[0])['name']}" for c in consumptions]
+                msg = f"Impression multi-couleur terminée. Total: {total_weight:.1f}g\n" + "\n".join(filament_names)
+            
+            ha_api.send_notification("✅ Filament Manager", msg)
+            
+            # Vérifier les stocks faibles
+            for fil_id, _, _ in consumptions:
+                filament = db.get_filament(fil_id)
+                if filament and calc.is_low_stock(filament['current_weight'], LOW_STOCK_THRESHOLD):
+                    ha_api.send_notification(
+                        "⚠️ Filament Manager - Stock Faible",
+                        f"Le filament '{filament['name']}' est en stock faible ({filament['current_weight']:.0f}g restants)"
+                    )
+    
+    def handle_single_color_print(self, weight_data):
+        """
+        Fallback pour impressions mono-couleur (compatibilité avec l'ancien système)
+        """
         # 1. Récupérer le filament actif
         active_filament = db.get_active_filament()
         if not active_filament:
@@ -210,12 +320,7 @@ class PrinterMonitor(threading.Thread):
             )
             return
 
-        # 2. Récupérer le poids consommé
-        weight_data = ha_api.get_state(PRINTER_WEIGHT_ENTITY)
-        if not weight_data:
-            print("[MONITOR] Impossible de lire le poids consommé", flush=True)
-            return
-            
+        # 2. Récupérer le poids consommé  
         try:
             weight_used = float(weight_data.get('state', 0))
         except ValueError:
@@ -354,6 +459,11 @@ def api_add_filament():
             notes=data.get('notes', '')
         )
         
+        # Mapper au slot AMS si fourni
+        ams_slot = data.get('ams_slot')
+        if ams_slot:
+            db.map_filament_to_ams_slot(filament_id, ams_slot)
+        
         # Notification
         ha_api.send_notification(
             "Filament Manager",
@@ -381,7 +491,8 @@ def api_update_filament(filament_id):
             initial_weight=float(data['initial_weight']),
             current_weight=float(data['current_weight']),
             cost=float(data['cost']),
-            notes=data.get('notes', '')
+            notes=data.get('notes', ''),
+            ams_slot=data.get('ams_slot') if data.get('ams_slot') else None
         )
         
         return json.dumps({'success': success})
@@ -461,9 +572,10 @@ run_app = app
 
 
 if __name__ == '__main__':
-    print(f"[INFO] Démarrage Filament Manager v0.4.7", flush=True)
+    print(f"[INFO] Démarrage Filament Manager v0.5.0", flush=True)
     print(f"[INFO] Statut imprimante: {PRINTER_STATUS_ENTITY}", flush=True)
     print(f"[INFO] Poids imprimante: {PRINTER_WEIGHT_ENTITY}", flush=True)
+    print(f"[INFO] Poids détaillé: {PRINTER_WEIGHT_DETAIL_ENTITY}", flush=True)
     print(f"[INFO] Devise: {CURRENCY}, Unité: {WEIGHT_UNIT}", flush=True)
     print(f"[INFO] Seuil stock faible: {LOW_STOCK_THRESHOLD}g", flush=True)
     print(f"[INFO] Port: {PORT}", flush=True)

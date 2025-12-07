@@ -67,6 +67,23 @@
         </div>
 
         <div class="form-group">
+            <label for="ams_slot">Emplacement AMS</label>
+            <select id="ams_slot" name="ams_slot">
+                <option value="">-- Aucun (non chargé dans AMS) --</option>
+                {% for ams in range(1, 5) %}
+                {% for slot in range(1, 5) %}
+                {% set slot_value = ams|string + '-' + slot|string %}
+                <option value="{{ slot_value }}" {{ 'selected' if filament and filament.get('ams_slot')==slot_value
+                    else '' }}>
+                    AMS {{ ams }} - Slot {{ slot }}
+                </option>
+                {% endfor %}
+                {% endfor %}
+            </select>
+            <small>Sélectionnez l'emplacement physique du filament dans l'AMS (optionnel)</small>
+        </div>
+
+        <div class="form-group">
             <label for="notes">Notes (optionnel)</label>
             <textarea id="notes" name="notes" rows="3"
                 placeholder="Informations supplémentaires...">{{ filament['notes'] if filament else '' }}</textarea>
