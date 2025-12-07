@@ -1,11 +1,13 @@
 # Changelog
-## [0.8.0] - 2025-12-07
+## [0.9.0] - 2025-12-07
 
-### Intégration Native Home Assistant
-- 🔌 **Intégration Native** : Inclusion d'un custom component pour une intégration plus propre qu'avec `rest_command`.
-- 🔄 **Auto-installation** : L'intégration s'installe/met à jour automatiquement dans `/config/custom_components/` au démarrage.
-- 🛠️ **Service Renommé** : `show_lametric` devient `wled_icons.display` pour mieux refléter ses capacités (texte, animation, icônes).
-- 📚 **Documentation** : Mise à jour complète du README pour refléter la nouvelle méthode d'intégration.
+### Améliorations UX
+- ✨ **Sélecteurs UI Home Assistant** : L'intégration utilise maintenant des sélecteurs natifs (sliders, dropdowns, toggles) au lieu de champs texte bruts.
+  - Luminosité via Slider
+  - Rotation via Menu Déroulant
+  - Animation/Miroir via Toggles
+  - Validation des entrées numériques
+
 ## [0.7.5] - 2025-11-22
 
 ### Documentation
