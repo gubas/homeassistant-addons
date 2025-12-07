@@ -1,4 +1,10 @@
 # Changelog
+## [1.0.2] - 2025-12-07
+
+### Corrections
+- 🔨 **Réparation Installation** : Ajout de logs détaillés au démarrage pour l'installation de l'intégration native.
+- ⚡ **Force Update** : Le script force maintenant la copie des fichiers même si les versions correspondent, pour s'assurer que les définitions de sélecteurs sont bien à jour.
+
 ## [1.0.1] - 2025-12-07
 
 ### Améliorations UI

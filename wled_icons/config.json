@@ -1,6 +1,6 @@
 {
   "name": "WLED Icons",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "slug": "wled_icons",
   "description": "Affichage d'icônes LaMetric animées sur matrice WLED 8x8",
   "url": "https://github.com/gubas/homeassistant-addons",
