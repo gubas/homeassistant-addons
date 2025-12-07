@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.10")
+app = FastAPI(title="WLED Icons Service", version="1.0.11")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -125,17 +125,27 @@ def send_frame(host: str, colors: List[List[int]], brightness: int = 255):
 
 
 def restore_wled_control(host: str):
-    """Release WLED segment control by setting effect 0 (Solid) - allows normal WLED commands to work again."""
+    """Release WLED segment control by turning off then on with default effect."""
     print(f"[RESTORE] Releasing segment control on {host}")
     url = f"http://{host}/json/state"
-    # Setting fx=0 (Solid effect) releases individual LED control
-    payload = {"seg": [{"id": 0, "fx": 0, "col": [[0, 0, 0]]}], "on": True}
+    
     try:
-        r = requests.post(url, json=payload, timeout=5)
-        if r.ok:
+        # Step 1: Turn off segment to clear individual LED control
+        payload_off = {"seg": [{"id": 0, "on": False}]}
+        r1 = requests.post(url, json=payload_off, timeout=5)
+        print(f"[RESTORE] Step 1 (off): {r1.status_code}")
+        
+        time.sleep(0.2)
+        
+        # Step 2: Turn back on with effect 0 (Solid) and live=false
+        payload_on = {"on": True, "live": False, "seg": [{"id": 0, "on": True, "fx": 0}]}
+        r2 = requests.post(url, json=payload_on, timeout=5)
+        print(f"[RESTORE] Step 2 (on): {r2.status_code}")
+        
+        if r1.ok and r2.ok:
             print(f"[RESTORE] WLED control released successfully")
         else:
-            print(f"[RESTORE] Failed to release control: {r.status_code} {r.text}")
+            print(f"[RESTORE] Partial failure: off={r1.status_code}, on={r2.status_code}")
     except Exception as e:
         print(f"[RESTORE] Error releasing control: {e}")
 

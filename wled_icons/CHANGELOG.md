@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.11] - 2025-12-07
+
+### Corrections
+- 🔧 **Restauration WLED améliorée** : Approche en 2 étapes (off puis on) + `live: false` pour mieux libérer le contrôle du segment.
+
 ## [1.0.10] - 2025-12-07
 
 ### Corrections
