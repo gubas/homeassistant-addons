@@ -23,6 +23,54 @@ Transformez vos textes et icônes en presets WLED pour matrices 8x8.
 
 Aucune configuration n'est requise pour cet add-on. Il fonctionne dès l'installation.
 
+## 🔌 Intégration Home Assistant
+
+Vous pouvez automatiser l'affichage d'icônes depuis vos scripts et automations Home Assistant en utilisant des `rest_command`.
+
+### 1. Configuration `configuration.yaml`
+
+Ajoutez ces lignes à votre fichier `configuration.yaml` (redémarrage requis) :
+
+```yaml
+rest_command:
+  wled_show_icon:
+    url: "http://localhost:8234/show/icon"
+    method: POST
+    payload: >
+      {
+        "host": "{{ host }}",
+        "icon_id": "{{ icon }}",
+        "animate": true,
+        "brightness": 128
+      }
+    content_type:  'application/json'
+
+  wled_stop_animation:
+    url: "http://localhost:8234/stop"
+    method: POST
+    content_type:  'application/json'
+```
+
+### 2. Utilisation dans une automation
+
+Exemple d'automation qui affiche une icône quand on sonne à la porte :
+
+```yaml
+automation:
+  - alias: "Sonnette Porte"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.doorbell
+        to: "on"
+    action:
+      - service: rest_command.wled_show_icon
+        data:
+          host: "192.168.1.50"  # IP de votre WLED
+          icon: "2480"          # ID icône LaMetric (cloche)
+      - delay: "00:00:10"
+      - service: rest_command.wled_stop_animation
+```
+
 ## 📖 Utilisation
 
 1. Accédez à l'interface via le panel Home Assistant ou le bouton "OPEN WEB UI"
