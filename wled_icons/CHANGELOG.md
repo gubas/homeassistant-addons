@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.13] - 2025-12-07
+
+### Corrections
+- 🔧 **Restauration WLED (Tentative 3)** : Ajout de `live: false` et `lor: 0` AVANT d'éteindre le segment pour forcer la sortie du mode Realtime qui bloque la matrix. Délai augmenté à 0.5s.
+
 ## [1.0.12] - 2025-12-07
 
 ### Corrections
