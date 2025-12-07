@@ -1,119 +1,19 @@
 display:
-  name: Display Icon/Text
-  description: Affiche une icône, du texte ou une animation sur WLED 8x8
+  name: Display Icon
+  description: Affiche une icône sur WLED
   fields:
     icon_id:
       name: Icon ID
-      description: ID de l'icône LaMetric (ex: 1486, 2867)
-      example: "1486"
+      description: ID de l'icône
       selector:
         text:
-          multiline: false
-
-    host:
-      name: WLED Host
-      description: Adresse IP/host WLED (optionnel si configuré dans l'intégration)
-      example: "192.168.1.100"
-      selector:
-        text:
-          multiline: false
-
-    color:
-      name: Recolor
-      description: Couleur hex optionnelle pour recolorisation (ex: #FF0000)
-      selector:
-        color_rgb:
-
-    rotate:
-      name: Rotation
-      description: Rotation en degrés
-      default: 0
-      selector:
-        select:
-          options:
-            - label: "0°"
-              value: "0"
-            - label: "90°"
-              value: "90"
-            - label: "180°"
-              value: "180"
-            - label: "270°"
-              value: "270"
-
-    flip_h:
-      name: Miroir Horizontal
-      description: Retourner horizontalement
-      default: false
-      selector:
-        boolean:
-
-    flip_v:
-      name: Miroir Vertical
-      description: Retourner verticalement
-      default: false
-      selector:
-        boolean:
-
-    animate:
-      name: Animate
-      description: Activer l'animation pour les GIFs
-      default: true
-      selector:
-        boolean:
-
-    fps:
-      name: FPS (Override)
-      description: Force le FPS de l'animation
-      selector:
-        number:
-          min: 1
-          max: 60
-          unit_of_measurement: fps
-          mode: box
-
-    loop:
-      name: Loops
-      description: Nombre de boucles (-1 pour infini)
-      default: 1
-      selector:
-        number:
-          min: -1
-          max: 100
-          mode: box
-
-    brightness:
-      name: Brightness
-      description: Luminosité (0-255)
-      default: 200
-      selector:
-        number:
-          min: 0
-          max: 255
-          mode: slider
-
-    addon_url:
-      name: Add-on URL
-      description: URL de l'add-on (optionnel)
-      example: "http://localhost:8234"
-      selector:
-        text:
-          multiline: false
 
 stop:
-  name: Stop Animation
-  description: Arrête l'animation en cours sur WLED
+  name: Stop
+  description: Arrête l'animation
   fields:
     host:
-      name: WLED Host
-      description: Adresse IP/host WLED (optionnel si configuré)
-      example: "192.168.1.100"
+      name: Host
+      description: IP WLED
       selector:
         text:
-          multiline: false
-    addon_url:
-      name: Add-on URL
-      description: URL de l'add-on (optionnel)
-      example: "http://localhost:8234"
-      selector:
-        text:
-          multiline: false
