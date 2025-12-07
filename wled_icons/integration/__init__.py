@@ -57,13 +57,14 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
         animate: bool = call.data.get("animate", True)
         fps: int | None = call.data.get("fps")
         loop: int = call.data.get("loop", 1)
+        duration: int | None = call.data.get("duration")
         brightness: int = call.data.get("brightness", 255)
         addon_url: str = call.data.get("addon_url", addon_default or "http://localhost:8234")
         
         # Debug logging
         _LOGGER.debug("Service call data: %s", call.data)
-        _LOGGER.debug("Parsed: animate=%s (type=%s), loop=%s (type=%s)", 
-                      animate, type(animate).__name__, loop, type(loop).__name__)
+        _LOGGER.debug("Parsed: animate=%s (type=%s), loop=%s (type=%s), duration=%s", 
+                      animate, type(animate).__name__, loop, type(loop).__name__, duration)
         
         if not host or not icon_id:
             _LOGGER.error("host et icon_id requis")
@@ -85,6 +86,8 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
                 payload["color"] = color
             if fps:
                 payload["fps"] = fps
+            if duration:
+                payload["duration"] = int(duration)
             
             async with aiohttp.ClientSession() as session:
                 async with session.post(f"{addon_url}/show/icon", json=payload, timeout=30) as resp:

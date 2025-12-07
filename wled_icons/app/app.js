@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
     animate: 'wled_animate',
     icon_fps: 'wled_icon_fps',
     icon_loop: 'wled_icon_loop',
+    icon_duration: 'wled_icon_duration',
     brightness: 'wled_brightness',
     gif_fps: 'wled_gif_fps',
     gif_loop: 'wled_gif_loop'
@@ -37,18 +38,18 @@ let animationInterval = null;
 let isPreviewPlaying = false;
 
 // Base path for API calls
-const basePath = window.location.pathname.endsWith('/') ? 
+const basePath = window.location.pathname.endsWith('/') ?
     window.location.pathname.slice(0, -1) : window.location.pathname;
 
 // Load saved values on page load
 window.addEventListener('DOMContentLoaded', () => {
     // Text inputs
-    ['host', 'icon_id', 'color', 'icon_fps', 'icon_loop'].forEach(name => {
+    ['host', 'icon_id', 'color', 'icon_fps', 'icon_loop', 'icon_duration'].forEach(name => {
         const input = document.querySelector(`[name="${name}"]`);
         const saved = localStorage.getItem(STORAGE_KEYS[name]);
         if (input && saved) input.value = saved;
     });
-    
+
     // GIF form inputs
     const gifFps = document.querySelector('#gifForm [name="fps"]');
     const gifLoop = document.querySelector('#gifForm [name="loop"]');
@@ -60,21 +61,21 @@ window.addEventListener('DOMContentLoaded', () => {
         const saved = localStorage.getItem(STORAGE_KEYS.gif_loop);
         if (saved) gifLoop.value = saved;
     }
-    
+
     // Rotate select
     const rotate = document.querySelector('[name="rotate"]');
     const savedRotate = localStorage.getItem(STORAGE_KEYS.rotate);
     if (rotate && savedRotate) rotate.value = savedRotate;
-    
+
     // Checkboxes
     const flipH = document.querySelector('[name="flip_h"]');
     const flipV = document.querySelector('[name="flip_v"]');
     const animate = document.querySelector('[name="animate"]');
-    
+
     if (flipH && localStorage.getItem(STORAGE_KEYS.flip_h) === 'true') flipH.checked = true;
     if (flipV && localStorage.getItem(STORAGE_KEYS.flip_v) === 'true') flipV.checked = true;
     if (animate && localStorage.getItem(STORAGE_KEYS.animate) === 'false') animate.checked = false;
-    
+
     // Trigger preview if icon ID exists
     const iconId = localStorage.getItem(STORAGE_KEYS.icon_id);
     if (iconId) previewIcon();
@@ -92,7 +93,7 @@ window.addEventListener('DOMContentLoaded', () => {
         pixelCanvas.width = EDITOR_SIZE;
         pixelCanvas.height = EDITOR_SIZE;
     }
-    
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         // Ctrl+Z or Cmd+Z for Undo
@@ -101,24 +102,24 @@ window.addEventListener('DOMContentLoaded', () => {
             undo();
         }
         // Ctrl+Y or Ctrl+Shift+Z or Cmd+Shift+Z for Redo
-        if (((e.ctrlKey || e.metaKey) && e.key === 'y') || 
+        if (((e.ctrlKey || e.metaKey) && e.key === 'y') ||
             ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z')) {
             e.preventDefault();
             redo();
         }
     });
-    
+
     // Brightness slider
     const brightnessSlider = document.getElementById('brightnessSlider');
     const brightnessValue = document.getElementById('brightnessValue');
-    
+
     // Load saved brightness value
     const savedBrightness = localStorage.getItem(STORAGE_KEYS.brightness);
     if (brightnessSlider && savedBrightness) {
         brightnessSlider.value = savedBrightness;
         if (brightnessValue) brightnessValue.textContent = savedBrightness;
     }
-    
+
     // Update brightness display on change
     if (brightnessSlider && brightnessValue) {
         brightnessSlider.addEventListener('input', (e) => {
@@ -148,7 +149,7 @@ function switchTab(tabName) {
     // Update tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
-    
+
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     if (tabName === 'draw') {
@@ -162,10 +163,10 @@ function switchTab(tabName) {
 function saveFormValues(formId) {
     const form = document.getElementById(formId);
     const fd = new FormData(form);
-    
+
     if (formId === 'f') {
         // Main form
-        ['host', 'icon_id', 'color', 'icon_fps', 'icon_loop', 'rotate'].forEach(name => {
+        ['host', 'icon_id', 'color', 'icon_fps', 'icon_loop', 'icon_duration', 'rotate'].forEach(name => {
             const val = fd.get(name);
             if (val) localStorage.setItem(STORAGE_KEYS[name], val);
         });
@@ -200,7 +201,7 @@ async function previewIcon() {
         prev.innerHTML = '';
         return;
     }
-    
+
     // If it's a custom icon (starts with WI)
     if (id.startsWith('WI')) {
         try {
@@ -229,7 +230,7 @@ async function stopAnimation() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
-        
+
         if (r.ok) {
             showMsg('⏹️ Animation arrêtée');
         } else {
@@ -243,16 +244,16 @@ async function stopAnimation() {
 
 async function sendIcon() {
     saveFormValues('f');  // Save values before sending
-    
+
     const fd = new FormData(document.getElementById('f'));
     const host = fd.get('host');
     const icon_id = fd.get('icon_id');
-    
+
     if (!host || !icon_id) {
         showMsg('❌ Veuillez renseigner l\'adresse WLED et l\'ID icône');
         return;
     }
-    
+
     const color = fd.get('color') || null;
     const rotate = parseInt(fd.get('rotate') || '0');
     const flip_h = fd.get('flip_h') === 'on';
@@ -260,22 +261,24 @@ async function sendIcon() {
     const animate = fd.get('animate') === 'on';
     const fpsStr = fd.get('icon_fps');
     const loop = parseInt(fd.get('icon_loop') || '1');
+    const durationStr = fd.get('icon_duration');
     const brightness = parseInt(fd.get('brightness') || '255');
-    
+
     const body = { host, icon_id, color, rotate, flip_h, flip_v, animate, loop, brightness };
     if (fpsStr) body.fps = parseInt(fpsStr);
-    
+    if (durationStr) body.duration = parseInt(durationStr);
+
     console.log('[SEND_ICON] Sending request:', body);
-    
+
     try {
         const r = await fetch(basePath + '/show/icon', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        
+
         console.log('[SEND_ICON] Response status:', r.status);
-        
+
         if (r.ok) {
             const result = await r.json();
             console.log('[SEND_ICON] Success:', result);
@@ -293,34 +296,34 @@ async function sendIcon() {
 
 async function sendGif() {
     saveFormValues('gifForm');  // Save values before sending
-    
+
     const fd = new FormData(document.getElementById('f'));
     const host = fd.get('host');
     const file = document.getElementById('gif').files[0];
-    
+
     if (!host || !file) {
         showMsg('❌ Veuillez renseigner l\'adresse WLED et sélectionner un fichier');
         return;
     }
-    
+
     const fps = document.querySelector('#gifForm [name="fps"]').value;
     const loop = parseInt(document.querySelector('#gifForm [name="loop"]').value || '1');
     const brightness = parseInt(document.getElementById('brightnessSlider')?.value || 255);
-    
+
     const buf = await file.arrayBuffer();
     const bytes = new Uint8Array(buf);
     const b64 = btoa(String.fromCharCode(...bytes));
-    
+
     const payload = { host, gif: b64, loop, brightness };
     if (fps) payload.fps = parseInt(fps);
-    
+
     try {
         const r = await fetch(basePath + '/show/gif', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        
+
         if (r.ok) {
             showMsg('✅ GIF affiché avec succès');
         } else {
@@ -337,10 +340,10 @@ async function sendGif() {
 function saveToHistory() {
     // Remove any redo history after current position
     history = history.slice(0, historyIndex + 1);
-    
+
     // Add current state
     history.push(JSON.parse(JSON.stringify(pixelGrid)));
-    
+
     // Limit history size
     if (history.length > MAX_HISTORY) {
         history.shift();
@@ -377,7 +380,7 @@ function toggleTool(tool) {
     currentTool = tool;
     document.querySelectorAll('.btn-tool').forEach(btn => btn.classList.remove('active'));
     const canvas = document.getElementById('pixelCanvas');
-    
+
     const btnDraw = document.getElementById('btnDraw');
     const btnPipette = document.getElementById('btnPipette');
 
@@ -406,7 +409,7 @@ function initCanvas() {
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
     const cellSize = canvas.width / GRID_SIZE;
-    
+
     // Load saved pixel art
     const savedFrames = localStorage.getItem('wled_pixel_frames');
     if (savedFrames) {
@@ -417,15 +420,15 @@ function initCanvas() {
             console.error('Failed to load saved frames', e);
         }
     }
-    
+
     drawGrid();
     loadSavedIcons();
     saveToHistory(); // Initialize history with current state
-    
+
     // Event Listeners
     canvas.addEventListener('mousedown', (e) => {
         const { row, col } = getCanvasCoords(e, canvas, cellSize);
-        
+
         if (currentTool === 'pipette') {
             // Pipette: copy color from pixel
             const color = pixelGrid[row][col];
@@ -443,22 +446,22 @@ function initCanvas() {
             paintPixel(row, col);
         }
     });
-    
+
     canvas.addEventListener('mousemove', (e) => {
         if (isDrawing && currentTool === 'draw') {
             const { row, col } = getCanvasCoords(e, canvas, cellSize);
             paintPixel(row, col);
         }
     });
-    
+
     canvas.addEventListener('mouseup', () => {
         isDrawing = false;
     });
-    
+
     canvas.addEventListener('mouseleave', () => {
         isDrawing = false;
     });
-    
+
     // Touch support for mobile
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
@@ -470,7 +473,7 @@ function initCanvas() {
         });
         canvas.dispatchEvent(mouseEvent);
     });
-    
+
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         if (isDrawing) {
@@ -482,11 +485,11 @@ function initCanvas() {
             canvas.dispatchEvent(mouseEvent);
         }
     });
-    
+
     canvas.addEventListener('touchend', () => {
         isDrawing = false;
     });
-    
+
     // Color palette selection
     document.querySelectorAll('.color-swatch').forEach(swatch => {
         swatch.addEventListener('click', () => {
@@ -497,7 +500,7 @@ function initCanvas() {
             document.getElementById('customColor').value = currentColor;
         });
     });
-    
+
     // Custom color picker
     document.getElementById('customColor').addEventListener('input', (e) => {
         currentColor = e.target.value;
@@ -510,25 +513,25 @@ function drawGrid() {
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
     const cellSize = canvas.width / GRID_SIZE;
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw pixels
     for (let row = 0; row < GRID_SIZE; row++) {
         for (let col = 0; col < GRID_SIZE; col++) {
             const x = col * cellSize;
             const y = row * cellSize;
-            
+
             ctx.fillStyle = pixelGrid[row][col];
             ctx.fillRect(x, y, cellSize, cellSize);
-            
+
             // Grid lines
             ctx.strokeStyle = 'rgba(128, 128, 128, 0.2)';
             ctx.lineWidth = 1;
             ctx.strokeRect(x, y, cellSize, cellSize);
         }
     }
-    
+
     // Save current frame
     frames[currentFrameIndex] = JSON.parse(JSON.stringify(pixelGrid));
     updateFrameList();
@@ -549,7 +552,7 @@ function getCanvasCoords(e, canvas, cellSize) {
 function paintPixel(row, col) {
     if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
         pixelGrid[row][col] = currentColor;
-        
+
         // Apply symmetry
         if (symmetryH) {
             const mirrorCol = GRID_SIZE - 1 - col;
@@ -564,7 +567,7 @@ function paintPixel(row, col) {
             const mirrorCol = GRID_SIZE - 1 - col;
             pixelGrid[mirrorRow][mirrorCol] = currentColor;
         }
-        
+
         drawGrid();
     }
 }
@@ -587,7 +590,7 @@ function exportPixelArt() {
     exportCanvas.width = GRID_SIZE;
     exportCanvas.height = GRID_SIZE;
     const exportCtx = exportCanvas.getContext('2d');
-    
+
     // Draw pixels
     for (let row = 0; row < GRID_SIZE; row++) {
         for (let col = 0; col < GRID_SIZE; col++) {
@@ -595,14 +598,14 @@ function exportPixelArt() {
             exportCtx.fillRect(col, row, 1, 1);
         }
     }
-    
+
     // Download
     const link = document.createElement('a');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
     link.download = `wled-icon-${timestamp}.png`;
     link.href = exportCanvas.toDataURL('image/png');
     link.click();
-    
+
     showMsg('✅ Image sauvegardée !');
 }
 
@@ -612,9 +615,9 @@ async function sendPixelArt() {
         showMsg('❌ Veuillez renseigner l\'adresse WLED');
         return;
     }
-    
+
     const brightness = parseInt(document.getElementById('brightnessSlider')?.value || 255);
-    
+
     // Convert pixel grid to WLED format with brightness
     const colors = [];
     for (let row = 0; row < GRID_SIZE; row++) {
@@ -623,23 +626,23 @@ async function sendPixelArt() {
             let r = parseInt(hex.slice(1, 3), 16);
             let g = parseInt(hex.slice(3, 5), 16);
             let b = parseInt(hex.slice(5, 7), 16);
-            
+
             // Apply brightness
             r = Math.round(r * brightness / 255);
             g = Math.round(g * brightness / 255);
             b = Math.round(b * brightness / 255);
-            
+
             colors.push([r, g, b]);
         }
     }
-    
+
     try {
         const r = await fetch(`http://${host}/json/state`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ seg: [{ id: 0, i: colors, bri: brightness }] })
         });
-        
+
         if (r.ok) {
             showMsg(`✅ Image affichée sur WLED (luminosité: ${brightness})`);
         } else {
@@ -716,7 +719,7 @@ function deleteFrame() {
 function toggleAnimationPreview() {
     const previewCanvas = document.getElementById('animationPreview');
     const btn = document.getElementById('previewBtn');
-    
+
     if (isPreviewPlaying) {
         // Stop preview
         clearInterval(animationInterval);
@@ -733,23 +736,23 @@ function toggleAnimationPreview() {
         previewCanvas.style.display = 'block';
         btn.textContent = '⏸️ Arrêter';
         isPreviewPlaying = true;
-        
+
         const previewCtx = previewCanvas.getContext('2d');
         let previewFrameIndex = 0;
         const fps = parseInt(document.getElementById('animFps').value) || 8;
-        
+
         function renderPreviewFrame() {
             const frame = frames[previewFrameIndex];
             previewCtx.clearRect(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
             for (let row = 0; row < GRID_SIZE; row++) {
                 for (let col = 0; col < GRID_SIZE; col++) {
                     previewCtx.fillStyle = frame[row][col];
-                    previewCtx.fillRect(col * (PREVIEW_SIZE/GRID_SIZE), row * (PREVIEW_SIZE/GRID_SIZE), (PREVIEW_SIZE/GRID_SIZE), (PREVIEW_SIZE/GRID_SIZE));
+                    previewCtx.fillRect(col * (PREVIEW_SIZE / GRID_SIZE), row * (PREVIEW_SIZE / GRID_SIZE), (PREVIEW_SIZE / GRID_SIZE), (PREVIEW_SIZE / GRID_SIZE));
                 }
             }
             previewFrameIndex = (previewFrameIndex + 1) % frames.length;
         }
-        
+
         renderPreviewFrame();
         animationInterval = setInterval(renderPreviewFrame, 1000 / fps);
     }
@@ -817,14 +820,14 @@ function openSaveDialog() {
     // Generate and display the ID that will be used
     const iconId = generateIconId();
     console.log('[SAVE_DIALOG] Generated ID:', iconId);
-    
+
     const inputField = document.getElementById('generatedIconId');
     inputField.value = iconId;
     inputField.dataset.iconId = iconId;
-    
+
     console.log('[SAVE_DIALOG] Input field value:', inputField.value);
     console.log('[SAVE_DIALOG] Input field dataset:', inputField.dataset.iconId);
-    
+
     document.getElementById('dialogOverlay').classList.add('show');
     document.getElementById('saveDialog').classList.add('show');
     document.getElementById('iconName').value = '';
@@ -849,10 +852,10 @@ async function saveIconToLibrary() {
     const name = document.getElementById('iconName').value.trim() || 'Sans nom';
     // Use the ID that was generated when opening the dialog
     const iconId = document.getElementById('generatedIconId').dataset.iconId;
-    
+
     // Save current frame before saving
     frames[currentFrameIndex] = JSON.parse(JSON.stringify(pixelGrid));
-    
+
     const iconData = {
         name: name,
         frames: JSON.parse(JSON.stringify(frames)),
@@ -860,7 +863,7 @@ async function saveIconToLibrary() {
         created: new Date().toISOString(),
         modified: new Date().toISOString()
     };
-    
+
     try {
         await saveIconToServer(iconId, iconData);
         await loadSavedIcons();
@@ -876,16 +879,16 @@ async function saveIconToLibrary() {
 async function loadSavedIcons() {
     const icons = await getSavedIcons();
     const container = document.getElementById('savedIconsList');
-    
+
     if (Object.keys(icons).length === 0) {
         container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem">Aucune création sauvegardée</p>';
         return;
     }
-    
-    const sortedIcons = Object.values(icons).sort((a, b) => 
+
+    const sortedIcons = Object.values(icons).sort((a, b) =>
         new Date(b.modified) - new Date(a.modified)
     );
-    
+
     container.innerHTML = sortedIcons.map(icon => {
         // Use first frame for preview if it's an animation
         const firstFrame = icon.frames ? icon.frames[0] : icon.grid;
@@ -897,13 +900,13 @@ async function loadSavedIcons() {
         });
         const frameCount = icon.frames ? icon.frames.length : 1;
         const animBadge = frameCount > 1 ? `<span style='color:var(--primary);font-size:0.7rem'>🎬 ${frameCount}</span>` : '';
-        
+
         // Show only last 6 digits of ID for display
         const shortId = icon.id.slice(-6);
         // Hide name row if no custom name
         const hasCustomName = icon.name !== 'Sans nom';
         const nameRow = hasCustomName ? `<div class='saved-icon-date' title='${icon.name}'>${icon.name} ${animBadge}</div>` : '';
-        
+
         return `
             <div class='saved-icon-item' onclick='loadIconFromLibrary("${icon.id}")'>
                 <img src='${previewData}' class='saved-icon-preview' alt='${icon.name}'/>
@@ -925,21 +928,21 @@ function gridToDataUrl(grid) {
     tempCanvas.width = GRID_SIZE;
     tempCanvas.height = GRID_SIZE;
     const tempCtx = tempCanvas.getContext('2d');
-    
+
     for (let row = 0; row < GRID_SIZE; row++) {
         for (let col = 0; col < GRID_SIZE; col++) {
             tempCtx.fillStyle = grid[row][col];
             tempCtx.fillRect(col, row, 1, 1);
         }
     }
-    
+
     return tempCanvas.toDataURL('image/png');
 }
 
 async function loadIconFromLibrary(iconId) {
     const icons = await getSavedIcons();
     const icon = icons[iconId];
-    
+
     if (icon) {
         // Load frames (or convert old single grid format)
         if (icon.frames) {
@@ -949,7 +952,7 @@ async function loadIconFromLibrary(iconId) {
             // Legacy format - single frame
             frames = [JSON.parse(JSON.stringify(icon.grid))];
         }
-        
+
         currentFrameIndex = 0;
         pixelGrid = JSON.parse(JSON.stringify(frames[0]));
         drawGrid();

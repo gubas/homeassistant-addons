@@ -1,4 +1,18 @@
 # Changelog
+## [1.0.9] - 2025-12-07
+
+### Nouvelles Fonctionnalités
+- ⏱️ **Durée d'animation** : Nouveau paramètre `duration` pour arrêter automatiquement les animations après X secondes.
+  - Disponible dans la Web UI, l'intégration HA, et l'API.
+  - Compatible avec le paramètre `loop` (arrêt dès que l'une des conditions est atteinte).
+
+## [1.0.8] - 2025-12-07
+
+### Corrections
+- 🔓 **Notification API** : Ajout de `hassio_api: true` pour permettre les notifications persistantes.
+- 🔧 **Sélecteurs UI** : Refonte avec configurations explicites (`multiline`, `mode`, `example`).
+- 🐛 **Debug** : Ajout de listing des fichiers installés dans les logs.
+
 ## [1.0.4] - 2025-12-07
 
 ### Corrections

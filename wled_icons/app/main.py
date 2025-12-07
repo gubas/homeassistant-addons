@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.8")
+app = FastAPI(title="WLED Icons Service", version="1.0.9")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -143,7 +143,8 @@ class IconRequest(BaseModel):
     flip_v: bool = Field(False, description="Miroir vertical")
     animate: bool = Field(True, description="Animer si l'icône LaMetric est un GIF")
     fps: Optional[int] = Field(None, description="Forcer FPS pour les GIFs (sinon utiliser la durée GIF)")
-    loop: int = Field(1, description="Nombre de boucles pour les GIFs")
+    loop: int = Field(1, description="Nombre de boucles pour les GIFs (-1 pour infini)")
+    duration: Optional[int] = Field(None, description="Durée max en secondes (arrêt automatique)")
     brightness: int = Field(255, ge=0, le=255, description="Luminosité (0-255)")
 
 
@@ -261,10 +262,10 @@ def show_icon(req: IconRequest):
         return {"ok": True, "mode": "static"}
     
     # If animation, start background thread
-    print(f"[SHOW_ICON] Starting animation thread with {len(sequence)} frames")
+    print(f"[SHOW_ICON] Starting animation thread with {len(sequence)} frames, duration={req.duration}")
     t = threading.Thread(
         target=background_animation_loop,
-        args=(req.host, sequence, req.loop, req.brightness),
+        args=(req.host, sequence, req.loop, req.brightness, req.duration),
         daemon=True
     )
     with animation_lock:
@@ -616,37 +617,45 @@ def stop_previous_animation():
                 print("[ANIMATION] Previous animation stopped")
         stop_animation_event.clear()
 
-def background_animation_loop(host: str, sequence: List[tuple[List[List[int]], float]], loop: int, brightness: int):
+def background_animation_loop(host: str, sequence: List[tuple[List[List[int]], float]], loop: int, brightness: int, duration: Optional[int] = None):
     """
     Runs in a background thread.
-    sequence: List of (colors, duration) tuples
+    sequence: List of (colors, frame_duration) tuples
+    duration: Max time in seconds (None = no limit)
     """
-    print(f"[ANIMATION] Starting background loop. Frames: {len(sequence)}, Loop: {loop}")
+    print(f"[ANIMATION] Starting background loop. Frames: {len(sequence)}, Loop: {loop}, Duration: {duration}s")
     loop_count = 0
+    start_time = time.time()
     
     try:
         while not stop_animation_event.is_set():
-            for colors, duration in sequence:
+            # Check duration limit
+            if duration and (time.time() - start_time) >= duration:
+                print(f"[ANIMATION] Duration limit ({duration}s) reached, stopping.")
+                break
+                
+            for colors, frame_duration in sequence:
                 if stop_animation_event.is_set():
                     break
                 
+                # Check duration limit within frame loop
+                if duration and (time.time() - start_time) >= duration:
+                    break
+                
                 try:
-                    # We use a simplified send_frame here to avoid raising HTTP exceptions in the thread
-                    # or we just catch them
                     send_frame(host, colors, brightness)
                 except Exception as e:
                     print(f"[ANIMATION] Error sending frame: {e}")
-                    # Optional: stop animation on error?
-                    # stop_animation_event.set()
-                    # break
                 
                 # Sleep in small chunks to be responsive to stop event
                 elapsed = 0
                 step = 0.05
-                while elapsed < duration:
+                while elapsed < frame_duration:
                     if stop_animation_event.is_set():
                         break
-                    time.sleep(min(step, duration - elapsed))
+                    if duration and (time.time() - start_time) >= duration:
+                        break
+                    time.sleep(min(step, frame_duration - elapsed))
                     elapsed += step
             
             loop_count += 1
