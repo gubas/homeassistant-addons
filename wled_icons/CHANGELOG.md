@@ -1,4 +1,12 @@
 # Changelog
+## [0.9.2] - 2025-12-07
+
+### Améliorations UX
+- 🚀 **Nouveau Flux de Configuration (Config Flow)** : L'installation de l'intégration native est maintenant entièrement optionnelle.
+  - Plus besoin de renseigner d'IP WLED à l'installation.
+  - Configuration simplifiée en un clic ("Valider").
+  - La configuration par défaut reste possible pour les utilisateurs avancés.
+
 ## [0.9.1] - 2025-12-07
 
 ### Corrections
