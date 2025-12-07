@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.12] - 2025-12-07
+
+### Corrections
+- 🐛 **Fix Crash** : Correction d'une erreur de syntaxe (code orphelin) introduite en 1.0.11 qui faisait crasher le thread d'animation lors de la restauration WLED.
+
 ## [1.0.11] - 2025-12-07
 
 ### Corrections

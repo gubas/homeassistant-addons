@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.11")
+app = FastAPI(title="WLED Icons Service", version="1.0.12")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -150,13 +150,7 @@ def restore_wled_control(host: str):
         print(f"[RESTORE] Error releasing control: {e}")
 
 
-# rasterize_svg removed - SVG endpoint deprecated
-    img = binary.resize((8, 8), Image.Resampling.NEAREST)
-    
-    if color:
-        img = recolor_nontransparent(img, hex_to_rgb(color))
-    
-    return img
+
 
 
 # --- Models ---
