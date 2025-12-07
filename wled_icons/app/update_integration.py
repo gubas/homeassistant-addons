@@ -97,6 +97,15 @@ def main():
             print(f"[UPDATE] Copying from {SOURCE_PATH} to {TARGET_PATH}")
             shutil.copytree(SOURCE_PATH, TARGET_PATH)
             print(f"[UPDATE] Successfully installed/updated integration.")
+            
+            # List copied files for debugging
+            print(f"[UPDATE] Files in target directory:")
+            for f in os.listdir(TARGET_PATH):
+                fpath = os.path.join(TARGET_PATH, f)
+                if os.path.isfile(fpath):
+                    print(f"[UPDATE]   - {f} ({os.path.getsize(fpath)} bytes)")
+                else:
+                    print(f"[UPDATE]   - {f}/ (dir)")
 
             if is_update:
                 print("[UPDATE] Sending notification to HA...")

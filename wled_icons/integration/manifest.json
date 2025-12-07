@@ -1,7 +1,7 @@
 {
   "domain": "wled_icons",
   "name": "WLED Icons",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "documentation": "https://github.com/gubas/wled-icons",
   "requirements": [],
   "codeowners": [

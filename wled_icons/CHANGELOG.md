@@ -1,4 +1,11 @@
 # Changelog
+## [1.0.4] - 2025-12-07
+
+### Corrections
+- 🔓 **Notification API** : Ajout de `hassio_api: true` pour permettre les notifications persistantes.
+- 🔧 **Sélecteurs UI** : Refonte avec configurations explicites (`multiline`, `mode`, `example`).
+- 🐛 **Debug** : Ajout de listing des fichiers installés dans les logs.
+
 ## [1.0.3] - 2025-12-07
 
 ### Corrections

@@ -1,6 +1,6 @@
 {
   "name": "WLED Icons",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "slug": "wled_icons",
   "description": "Affichage d'icônes LaMetric animées sur matrice WLED 8x8",
   "url": "https://github.com/gubas/homeassistant-addons",
@@ -15,6 +15,7 @@
   "boot": "auto",
   "ingress": true,
   "ingress_port": 8234,
+  "hassio_api": true,
   "panel_icon": "mdi:led-strip-variant",
   "ports": {
     "8234/tcp": 8234
