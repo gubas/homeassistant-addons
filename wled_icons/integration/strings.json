@@ -1,0 +1,14 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Configuration WLED Icons",
+                "description": "Ces paramètres sont optionnels. Vous pouvez les laisser vides pour utiliser les valeurs par défaut.",
+                "data": {
+                    "host": "IP WLED (Optionnel)",
+                    "addon_url": "URL Add-on (Optionnel)"
+                }
+            }
+        }
+    }
+}

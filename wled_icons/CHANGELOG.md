@@ -1,4 +1,10 @@
 # Changelog
+## [1.0.1] - 2025-12-07
+
+### Améliorations UI
+- ✨ **Labels Clairs** : Ajout de fichiers de traduction (`strings.json`) pour marquer explicitement les champs de configuration comme "(Optionnel)".
+- 🔨 **Validation Sélecteurs** : Renforcement de la validation des sélecteurs pour s'assurer qu'ils apparaissent correctement dans les automations.
+
 ## [1.0.0] - 2025-12-07
 
 ### 🎉 Release Majeure
