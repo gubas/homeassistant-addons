@@ -46,8 +46,8 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
     host_default: str = data.get(CONF_HOST)
     addon_default: str | None = data.get(CONF_ADDON_URL)
     
-    async def async_show_lametric(call: ServiceCall):
-        """Display a LaMetric icon (static or animated) on WLED"""
+    async def async_display(call: ServiceCall):
+        """Display content (icon, text, animation) on WLED"""
         host: str = call.data.get("host", host_default)
         icon_id: str = call.data.get("icon_id")
         color: str | None = call.data.get("color")
@@ -86,9 +86,9 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
                     if resp.status >= 400:
                         text = await resp.text()
                         raise RuntimeError(f"Addon error {resp.status}: {text}")
-                    _LOGGER.info("LaMetric icon %s displayed on %s", icon_id, host)
+                    _LOGGER.info("Content %s displayed on %s", icon_id, host)
         except Exception as e:
-            _LOGGER.exception("Echec affichage icône LaMetric: %s", e)
+            _LOGGER.exception("Echec affichage: %s", e)
 
     async def async_stop(call: ServiceCall):
         """Stop the current animation on WLED"""
@@ -112,7 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
         except Exception as e:
             _LOGGER.exception("Échec arrêt animation: %s", e)
 
-    hass.services.async_register(DOMAIN, "show_lametric", async_show_lametric)
+    hass.services.async_register(DOMAIN, "display", async_display)
     hass.services.async_register(DOMAIN, "stop", async_stop)
 
     _LOGGER.info("wled_icons services registered (entry %s)", entry.entry_id)

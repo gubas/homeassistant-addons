@@ -1,4 +1,4 @@
-# 💡 WLED Icons
+# 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v0.8.0-blue)
 
 Générateur d'icônes personnalisées pour WLED.
 
@@ -23,53 +23,57 @@ Transformez vos textes et icônes en presets WLED pour matrices 8x8.
 
 Aucune configuration n'est requise pour cet add-on. Il fonctionne dès l'installation.
 
-## 🔌 Intégration Home Assistant
+## 🔌 Intégration Native Home Assistant
+ 
+ Une intégration native est incluse avec cet add-on pour faciliter son utilisation dans Home Assistant.
+ 
+ ### 1. Installation de l'intégration
+ 
+ **Automatique (Recommandé) :**
+ L'intégration est installée automatiquement au démarrage de l'add-on. Redémarrez simplement Home Assistant après le premier démarrage de l'add-on, puis ajoutez l'intégration "WLED Icons".
+ 
+ **Manuelle (Si l'automatique échoue) :**
+ 1. Copiez le dossier `wled_icons/integration` de ce dépôt vers `/config/custom_components/wled_icons`.
+ 2. Redémarrez Home Assistant.
+ 3. Allez dans **Paramètres → Appareils et services**.
+ 4. Cliquez sur **Ajouter une intégration** et cherchez **WLED Icons**.
+ 
+ ### 2. Utilisation dans une automation
+ 
+ Utilisez le service `wled_icons.display` (anciennement `show_lametric`).
+ 
+ Exemple d'automation (Sonnette) :
+ 
+ ```yaml
+ automation:
+   - alias: "Sonnette Porte"
+     trigger:
+       - platform: state
+         entity_id: binary_sensor.doorbell
+         to: "on"
+     action:
+       - service: wled_icons.display
+         data:
+           icon_id: "2480"       # ID icône LaMetric (cloche)
+           host: "192.168.1.50"  # IP de votre WLED
+           animate: true
+           brightness: 200
+       - delay: "00:00:10"
+       - service: wled_icons.stop
+         data:
+             host: "192.168.1.50"
+ ```
+ 
+ ### Services disponibles
+ 
+ - **wled_icons.display** : Affiche une icône ou une animation.
+   - `icon_id` (Requis) : ID de l'icône (ex: `1486`).
+   - `host` : IP du WLED.
+   - `color` : Couleur hexadécimale pour recolorier l'icône (ex: `#FF0000`).
+   - `animate` : `true` pour animer les GIFs.
+   - `rotate` : Rotation (0, 90, 180, 270).
 
-Vous pouvez automatiser l'affichage d'icônes depuis vos scripts et automations Home Assistant en utilisant des `rest_command`.
-
-### 1. Configuration `configuration.yaml`
-
-Ajoutez ces lignes à votre fichier `configuration.yaml` (redémarrage requis) :
-
-```yaml
-rest_command:
-  wled_show_icon:
-    url: "http://localhost:8234/show/icon"
-    method: POST
-    payload: >
-      {
-        "host": "{{ host }}",
-        "icon_id": "{{ icon }}",
-        "animate": true,
-        "brightness": 128
-      }
-    content_type:  'application/json'
-
-  wled_stop_animation:
-    url: "http://localhost:8234/stop"
-    method: POST
-    content_type:  'application/json'
-```
-
-### 2. Utilisation dans une automation
-
-Exemple d'automation qui affiche une icône quand on sonne à la porte :
-
-```yaml
-automation:
-  - alias: "Sonnette Porte"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.doorbell
-        to: "on"
-    action:
-      - service: rest_command.wled_show_icon
-        data:
-          host: "192.168.1.50"  # IP de votre WLED
-          icon: "2480"          # ID icône LaMetric (cloche)
-      - delay: "00:00:10"
-      - service: rest_command.wled_stop_animation
-```
+- **wled_icons.stop** : Arrête l'animation en cours.
 
 ## 📖 Utilisation
 

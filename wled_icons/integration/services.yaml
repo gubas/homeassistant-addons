@@ -1,6 +1,6 @@
-show_lametric:
-  name: Show LaMetric Icon
-  description: Affiche une icône LaMetric (statique ou animée) sur WLED 8x8
+display:
+  name: Display Icon/Text
+  description: Affiche une icône, du texte ou une animation sur WLED 8x8
   fields:
     icon_id:
       description: ID de l'icône LaMetric (ex: 1486, 2867)
