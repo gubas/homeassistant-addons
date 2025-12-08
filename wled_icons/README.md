@@ -1,4 +1,4 @@
-# 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v1.0.14-blue)
+# 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v1.0.15-blue)
 
 Générateur d'icônes personnalisées pour WLED.
 

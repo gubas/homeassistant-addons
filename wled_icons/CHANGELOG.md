@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.15] - 2025-12-07
+
+### Corrections
+- 🔧 **Restauration WLED (Preset)** : Au lieu de forcer une config générique, l'intégration charge maintenant le **Preset 1** (`ps: 1`) lors de la restauration. Assurez-vous d'avoir un preset 1 configuré dans WLED !
+
 ## [1.0.14] - 2025-12-07
 
 ### Corrections

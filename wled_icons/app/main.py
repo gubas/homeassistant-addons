@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.14")
+app = FastAPI(title="WLED Icons Service", version="1.0.15")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -138,17 +138,15 @@ def restore_wled_control(host: str):
         # Wait for WLED to process power off
         time.sleep(0.5)
         
-        # Step 2: Global ON + Reset Segment 0 + CLEAR PIXEL BUFFER
-        # "i": [] is crucial to clear previous distinct pixel control
+        # Step 2: Global ON + Load Preset 1
+        # This is what the user requested to restore default state
         payload_on = {
             "on": True, 
             "live": False, 
-            "seg": [
-                {"id": 0, "on": True, "fx": 0, "i": []}
-            ]
+            "ps": 1
         }
         r2 = requests.post(url, json=payload_on, timeout=5)
-        print(f"[RESTORE] Step 2 (Global ON + Clear Buffer): {r2.status_code}")
+        print(f"[RESTORE] Step 2 (Global ON + Preset 1): {r2.status_code}")
         
         if r1.ok and r2.ok:
             print(f"[RESTORE] WLED control released successfully")
