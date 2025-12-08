@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.15")
+app = FastAPI(title="WLED Icons Service", version="1.0.16")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -55,6 +55,7 @@ def save_custom_icons(icons: Dict):
     except Exception as e:
         print(f"Error saving icons: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save: {e}")
+
 
 # --- Helpers ---
 
@@ -124,9 +125,9 @@ def send_frame(host: str, colors: List[List[int]], brightness: int = 255):
         raise HTTPException(status_code=502, detail=f"Connection error: {str(e)}")
 
 
-def restore_wled_control(host: str):
+def restore_wled_control(host: str, preset_id: int = 1):
     """Release WLED segment control by turning off then on with default effect."""
-    print(f"[RESTORE] Releasing segment control on {host}")
+    print(f"[RESTORE] Releasing segment control on {host} --> Preset {preset_id}")
     url = f"http://{host}/json/state"
     
     try:
@@ -138,20 +139,14 @@ def restore_wled_control(host: str):
         # Wait for WLED to process power off
         time.sleep(0.5)
         
-        # Step 2: Global ON + Load Preset 1
-        # This is what the user requested to restore default state
+        # Step 2: Global ON + Load Preset X
         payload_on = {
             "on": True, 
             "live": False, 
-            "ps": 1
+            "ps": preset_id
         }
         r2 = requests.post(url, json=payload_on, timeout=5)
-        print(f"[RESTORE] Step 2 (Global ON + Preset 1): {r2.status_code}")
-        
-        if r1.ok and r2.ok:
-            print(f"[RESTORE] WLED control released successfully")
-        else:
-            print(f"[RESTORE] Partial failure: off={r1.status_code}, on={r2.status_code}")
+        print(f"[RESTORE] Step 2 (Global ON + Preset {preset_id}): {r2.status_code}")
         
         if r1.ok and r2.ok:
             print(f"[RESTORE] WLED control released successfully")
@@ -177,6 +172,7 @@ class IconRequest(BaseModel):
     loop: int = Field(1, description="Nombre de boucles pour les GIFs (-1 pour infini)")
     duration: Optional[int] = Field(None, description="Durée max en secondes (arrêt automatique)")
     brightness: int = Field(255, ge=0, le=255, description="Luminosité (0-255)")
+    restore_preset: int = Field(1, description="ID du preset à restaurer après animation (défaut: 1)")
 
 
 # SvgRequest removed - deprecated endpoint
@@ -195,6 +191,7 @@ def show_icon(req: IconRequest):
     
     print(f"[SHOW_ICON] Received request for icon_id: {req.icon_id}")
     print(f"[SHOW_ICON] animate={req.animate}, loop={req.loop}, fps={req.fps}, brightness={req.brightness}")
+    print(f"[SHOW_ICON] restore_preset={req.restore_preset}")
     
     sequence: List[tuple[List[List[int]], float]] = []
     
@@ -290,13 +287,20 @@ def show_icon(req: IconRequest):
     if len(sequence) == 1:
         print("[SHOW_ICON] Sending single static frame")
         send_frame(req.host, sequence[0][0], brightness=req.brightness)
+        # Note: Static frames in this logic just update once. 
+        # They don't have a "duration" to auto-stop, unless handled by client.
+        # But if we want auto-restore for single frame, we might need thread too.
+        # Current logic: single frame = fire and forget. 
+        # If user wants restore, they use duration or loop.
+        # However, for consistency, maybe we should respect duration even for static?
+        # For now, keeping legacy behavior (static = infinite until next command).
         return {"ok": True, "mode": "static"}
     
     # If animation, start background thread
     print(f"[SHOW_ICON] Starting animation thread with {len(sequence)} frames, duration={req.duration}")
     t = threading.Thread(
         target=background_animation_loop,
-        args=(req.host, sequence, req.loop, req.brightness, req.duration),
+        args=(req.host, sequence, req.loop, req.brightness, req.duration, req.restore_preset),
         daemon=True
     )
     with animation_lock:
@@ -393,6 +397,10 @@ class CustomIcon(BaseModel):
 @app.post("/stop")
 def stop_animation():
     """Stop any currently running animation"""
+    # Note: stop_previous_animation uses the thread which has the preset_id in its args/locals
+    # Ideally, we should potentially pass a specific target here, but the thread already knows what to do on exit (restore default).
+    # If we want to override, we'd need more complex logic. 
+    # For now, stopping just lets the thread finish and call restore(preset) as configured.
     stop_previous_animation()
     return {"ok": True, "message": "Animation stopped"}
 
@@ -648,13 +656,14 @@ def stop_previous_animation():
                 print("[ANIMATION] Previous animation stopped")
         stop_animation_event.clear()
 
-def background_animation_loop(host: str, sequence: List[tuple[List[List[int]], float]], loop: int, brightness: int, duration: Optional[int] = None):
+def background_animation_loop(host: str, sequence: List[tuple[List[List[int]], float]], loop: int, brightness: int, duration: Optional[int] = None, restore_preset: int = 1):
     """
     Runs in a background thread.
     sequence: List of (colors, frame_duration) tuples
     duration: Max time in seconds (None = no limit)
+    restore_preset: WLED preset ID to load on exit
     """
-    print(f"[ANIMATION] Starting background loop. Frames: {len(sequence)}, Loop: {loop}, Duration: {duration}s")
+    print(f"[ANIMATION] Starting background loop. Frames: {len(sequence)}, Loop: {loop}, Duration: {duration}s, Restore: {restore_preset}")
     loop_count = 0
     start_time = time.time()
     
@@ -696,6 +705,5 @@ def background_animation_loop(host: str, sequence: List[tuple[List[List[int]], f
     except Exception as e:
         print(f"[ANIMATION] Thread crashed: {e}")
     finally:
-        print("[ANIMATION] Thread exiting, restoring WLED control...")
-        restore_wled_control(host)
-
+        print(f"[ANIMATION] Thread exiting, restoring WLED control (Preset {restore_preset})...")
+        restore_wled_control(host, restore_preset)

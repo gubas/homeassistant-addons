@@ -1,4 +1,4 @@
-# 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v1.0.15-blue)
+# 💡 WLED Icons ![Version](https://img.shields.io/badge/version-v1.0.16-blue)
 
 Générateur d'icônes personnalisées pour WLED.
 
@@ -11,7 +11,7 @@ Transformez vos textes et icônes en presets WLED pour matrices 8x8.
 - 💡 **Matrices 8x8** - Optimisé pour les matrices LED standard WLED
 - 🔌 **Intégration Native HA** - Fonctionne directement depuis Home Assistant
 - 🖥️ **Interface simple** - Création de presets en un clic
-- 🔄 **Snapshot & Restore** - Restauration automatique de l'état précédent de WLED (on/off, preset, playlist) après une notification
+- 🔄 **Auto-Reset** - Restauration automatique du Preset 1 (ou état défini) après une notification
 
 ## 🚀 Installation
 
@@ -55,6 +55,7 @@ Affiche une icône, un texte ou une animation.
 | `flip_h` | Miroir Horizontal | `true` |
 | `flip_v` | Miroir Vertical | `false` |
 | `rotate` | Rotation (0, 90, 180, 270) | `90` |
+| `restore_preset` | ID du preset à charger après l'animation (Défaut: 1) | `5` |
 
 **Exemple d'automation (Sonnette) :**
 ```yaml

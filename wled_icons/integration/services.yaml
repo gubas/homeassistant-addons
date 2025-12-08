@@ -93,6 +93,15 @@ display:
       selector:
         text:
 
+    restore_preset:
+      name: Restore Preset
+      description: "ID du preset a restaurer apres animation (defaut: 1)"
+      default: 1
+      selector:
+        number:
+          min: 1
+          max: 250
+
 stop:
   name: Stop Animation
   description: "Arrete animation en cours sur WLED"

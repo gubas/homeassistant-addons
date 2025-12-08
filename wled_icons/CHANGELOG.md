@@ -1,4 +1,14 @@
 # Changelog
+## [1.0.16] - 2025-12-08
+
+### Nouvelles Fonctionnalités
+- ✨ **Restauration de Preset Configurable** : Ajout du paramètre `restore_preset` (défaut: 1) permettant de choisir quel preset WLED charger à la fin d'une animation.
+  - Disponible dans l'API et via l'intégration Home Assistant (service `wled_icons.display`).
+
+### Changements
+- ↩️ **Revert Snapshot** : Annulation de la fonctionnalité "Snapshot & Restore" complexe au profit d'un mécanisme simple et fiable de chargement de Preset.
+- 📖 **Documentation** : Mise à jour du README pour refléter le comportement réel de "Auto-Reset".
+
 ## [1.0.15] - 2025-12-07
 
 ### Corrections

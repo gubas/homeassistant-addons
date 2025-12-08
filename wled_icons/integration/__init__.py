@@ -59,6 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
         loop: int = call.data.get("loop", 1)
         duration: int | None = call.data.get("duration")
         brightness: int = call.data.get("brightness", 255)
+        restore_preset: int = call.data.get("restore_preset", 1)
         addon_url: str = call.data.get("addon_url", addon_default or "http://localhost:8234")
         
         # Debug logging
@@ -80,7 +81,8 @@ async def async_setup_entry(hass: HomeAssistant, entry) -> bool:
                 "flip_v": bool(flip_v),
                 "animate": bool(animate),
                 "loop": int(loop) if loop is not None else 1,
-                "brightness": int(brightness) if brightness else 255
+                "brightness": int(brightness) if brightness else 255,
+                "restore_preset": int(restore_preset) if restore_preset else 1
             }
             if color:
                 payload["color"] = color
