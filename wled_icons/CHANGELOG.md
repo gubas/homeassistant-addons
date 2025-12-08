@@ -1,4 +1,9 @@
 # Changelog
+## [1.0.14] - 2025-12-07
+
+### Corrections
+- 🔧 **Restauration WLED (Tentative 4 - "Nucléaire")** : Utilisation de **Global OFF** (`on: false` global) puis vidage explicite du buffer de pixels (`i: []`) lors du rallumage. C'est la méthode la plus radicale pour forcer WLED à oublier l'état précédent.
+
 ## [1.0.13] - 2025-12-07
 
 ### Corrections

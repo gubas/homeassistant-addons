@@ -11,7 +11,7 @@ import time
 import json
 import threading
 
-app = FastAPI(title="WLED Icons Service", version="1.0.13")
+app = FastAPI(title="WLED Icons Service", version="1.0.14")
 
 # Global animation control
 animation_lock = threading.Lock()
@@ -130,22 +130,30 @@ def restore_wled_control(host: str):
     url = f"http://{host}/json/state"
     
     try:
-        # Step 1: Force exit of Live mode and turn off segment
-        # "live": False -> Exit realtime mode
-        # "lor": 0 -> Disable Live Override (just in case)
-        # "seg": [{"id": 0, "on": False}] -> Turn off segment 0
-        payload_off = {"live": False, "lor": 0, "seg": [{"id": 0, "on": False}]}
+        # Step 1: Global OFF (More powerful than segment off) + Force Live False
+        payload_off = {"on": False, "live": False, "lor": 0}
         r1 = requests.post(url, json=payload_off, timeout=5)
-        print(f"[RESTORE] Step 1 (off/live-false): {r1.status_code}")
+        print(f"[RESTORE] Step 1 (Global OFF): {r1.status_code}")
         
-        # Wait longer to ensure WLED state machine settles
+        # Wait for WLED to process power off
         time.sleep(0.5)
         
-        # Step 2: Turn back on with effect 0 (Solid) and explicit col reset
-        # Re-asserting live: False to be sure
-        payload_on = {"on": True, "live": False, "seg": [{"id": 0, "on": True, "fx": 0}]}
+        # Step 2: Global ON + Reset Segment 0 + CLEAR PIXEL BUFFER
+        # "i": [] is crucial to clear previous distinct pixel control
+        payload_on = {
+            "on": True, 
+            "live": False, 
+            "seg": [
+                {"id": 0, "on": True, "fx": 0, "i": []}
+            ]
+        }
         r2 = requests.post(url, json=payload_on, timeout=5)
-        print(f"[RESTORE] Step 2 (on/fx-0): {r2.status_code}")
+        print(f"[RESTORE] Step 2 (Global ON + Clear Buffer): {r2.status_code}")
+        
+        if r1.ok and r2.ok:
+            print(f"[RESTORE] WLED control released successfully")
+        else:
+            print(f"[RESTORE] Partial failure: off={r1.status_code}, on={r2.status_code}")
         
         if r1.ok and r2.ok:
             print(f"[RESTORE] WLED control released successfully")
